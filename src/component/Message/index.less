@@ -1,0 +1,50 @@
+.msg-container {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-column-gap: 22px;
+    padding: 0 20px;
+    margin: 30px 0;
+    align-items: top;
+    box-sizing: border-box;
+}
+
+.msg-content-wrap {
+    overflow: hidden;
+    grid-area: msgcontent;
+    display: flex;
+    align-items: center;
+}
+
+.msg-content-mine {
+    flex-direction: row-reverse;
+}
+
+.msg-container-other {
+    grid-template-columns: 80px 1fr 40px;
+    grid-template-areas: "avator msgcontent .";
+}
+
+.msg-container-mine {
+    grid-template-columns: 40px 1fr 80px;
+    grid-template-areas: ". msgcontent avator";
+}
+
+
+.msg-avator-size {
+    width: 80px;
+    height: 80px;
+    grid-area: avator;
+}
+
+.msg-icon-fail {
+    width: 30px;
+    height: 30px;
+}
+
+.msg-status {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0px;
+    margin: 0 5px;
+}
+

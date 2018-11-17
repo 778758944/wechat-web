@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,height=device-height,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <script src="https://cdn.bootcss.com/react/15.6.2/react.min.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/15.6.2/react-dom.min.js"></script>
+  <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    var html = document.querySelector("html");
+    var width = document.documentElement.clientWidth;
+    html.style.fontSize = width/10 + "px";
+
+    document.body.addEventListener("touchmove", function(evt) {
+      if (!evt._isScroller) {
+        evt.preventDefault();
+      }
+    }, {passive: true});
+  </script>
+</body>
+</html>

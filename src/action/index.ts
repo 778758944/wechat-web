@@ -1,0 +1,1 @@
+const INITFRIENDLIST = "init_friendlist";

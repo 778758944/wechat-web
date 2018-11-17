@@ -1,0 +1,97 @@
+@import "../css/common.less";
+.video-call-video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    left: 0;
+    top: 0;
+    object-fit: cover;
+}
+
+.video-call-friend {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    padding: 70px 30px 0 30px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.video-call-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: #282a2f;
+}
+
+.video-call-username {
+    font-size: @textBig;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.video-call-avator {
+    margin-right: 25px;
+}
+
+.video-call-wait {
+    font-size: @textSmall;
+    color: white;
+}
+
+.video-call-opera {
+    position: absolute;
+    bottom: 96px;
+    left: 0;
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    transition: all .5s ease;
+}
+
+.video-call-opera-btn {
+    width: 132px;
+    height: 132px;
+}
+
+.video-call-remoteVideo {
+    position: absolute;
+    // width: 160px;
+    // height: 285px;
+    background-color: #000;
+    top: 0;
+    right: 0;
+    object-fit: contain;
+}
+
+.opera-btn-ani {
+    transition: all 2s ease;
+}
+
+.video-blur {
+    filter: blur(15px);
+}
+
+.video-hide {
+    visibility: hidden;
+}
+
+.audio-call-wrap {
+    width: 100%;
+    text-align: center;
+    margin-top: 240px;
+}
+
+.audio-call-avator {
+    width: 240px;
+    height: 240px;
+}
+.audio-call-name {
+    color: white;
+    font-size: @textExtraBig;
+    margin-top: 50px;
+    user-select: none;
+}
