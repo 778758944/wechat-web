@@ -10,7 +10,7 @@
         "strictNullChecks": true,
         "lib": [
             "dom",
-            "es6"
+            "es6",
         ],
         "allowJs": true,
         "downlevelIteration": true,

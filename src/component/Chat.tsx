@@ -12,6 +12,7 @@ import { mockMineMsg, mockOtherMsg, msgArr } from "../mock"
 import SvgIcon from "./Icon"
 import { getUTCTimeStamp, disableOverBounce } from "../util"
 import { ISignalMsg } from "../network/Signal"
+import * as PropTypes from "prop-types"
 
 interface IParam {
     id: string;
@@ -40,6 +41,10 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private moreItem = ["Album", "Video", "Draw"];
     private moreArea:HTMLDivElement;
     private isShowMore: boolean = false;
+
+    static contextTypes = {
+        title: PropTypes.object
+    }
 
     constructor(props: IChatProps) {
         super(props);
@@ -98,7 +103,9 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
     initChat() {
         const { handleNewMsg, currentFriend, initMsgList } = this.props;
+        const { title } = this.context;
         initMsgList(currentFriend.unreads || []);
+        title.innerText = currentFriend.username || currentFriend.email;
         net_setPoint({point: `/chat/${this.id}`}).catch(() => {
             //
         });
@@ -272,7 +279,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
 }
 
 function mapStateToProps(state: IState, ownProps: RouteComponentProps<IParam>) {
-    console.log(ownProps);
     const id = parseInt(ownProps.match.params.id);
     const friend = state.friendList.filter((e, index) => e.id === id)[0] || {};
     return {

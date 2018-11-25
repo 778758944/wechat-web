@@ -1,0 +1,41 @@
+@import "../css/common.less";
+.nav-container {
+    width: 100%;
+    height: 100px;
+    background-color: #595959;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+    padding: 0 18px;
+    box-sizing: border-box;
+    grid-template-areas: "back title more";
+}
+
+.nav-back {
+    display: flex;
+    align-items: center;
+    grid-area: back;
+}
+
+.nav-back-text {
+    font-size: @textMedium;
+    color: white;
+}
+
+.nav-back-icon {
+    width: 45px;
+    height: 45px;
+}
+
+.nav-title {
+    font-size: @textBig;
+    justify-self: center;
+    color: white;
+    font-weight: bold;
+    grid-area: title;
+}
+
+.nav-more {
+    grid-area: more;
+}

@@ -12,6 +12,7 @@ import { ThunkDispatch, ThunkAction } from "redux-thunk"
 import FriendListItem from "./FriendListItem"
 import SocketConnection from "../network/SocketConnection"
 import { ISignalMsg, isRTCIceCandidate, isDataString } from "../network/Signal"
+import * as PropTypes from "prop-types";
 
 interface IProps extends RouteComponentProps {
     friendList: IFriend[];
@@ -26,7 +27,9 @@ interface IProps extends RouteComponentProps {
 class FriendList extends React.Component<IProps, {num: number}>
 {
     private socket: SocketConnection;
-
+    static contextTypes = {
+        title: PropTypes.object,
+    }
     updateInfo() {
         this.props.getFriendList().then(() => {
             this.setPoint();
@@ -38,7 +41,11 @@ class FriendList extends React.Component<IProps, {num: number}>
     }
 
     componentDidMount() {
-
+        console.log('context', this.context);
+        const title: HTMLElement | null = document.querySelector(".nav-title");
+        if (title) {
+            title.innerText = "Chat";
+        }
         this.updateInfo();
     }
 

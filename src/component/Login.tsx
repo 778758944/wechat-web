@@ -6,6 +6,7 @@ import { net_Login } from "../network"
 import toast from "antd-mobile/es/toast"
 import "antd-mobile/es/toast/style/index.css"
 import "./Login.less"
+import { subscribeNotify } from "../sw"
 
 interface IState {
     password: string;
@@ -39,6 +40,7 @@ export default class Login extends React.Component<RouteComponentProps, IState>
 
     handleLogin() {
         net_Login(this.state).then(() => {
+            subscribeNotify();
             this.props.history.push("/");
         }).catch((err: any) => {
             console.log(err);

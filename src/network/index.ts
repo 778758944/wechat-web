@@ -6,6 +6,7 @@ const getFriendListUrl = "/api/yonghus/friendList";
 const loginUrl = "/api/yonghus/login";
 const setPointUrl = "/api/setPoint";
 const clearUnreadMsgUrl = "/api/unreads/getUnreadMsg";
+const setPushKey = "/api/pushkeys/addkey";
 export const socketUrl = "https://chat.xingwentao.xyz";
 
 const DOMAIN = "http://wechat.xingwentao.xyz";
@@ -22,6 +23,10 @@ export interface IGetFriendList {
 export interface ILoginParam {
     email: string;
     password: string;
+}
+
+export interface ISetKeyParam {
+    key: string;
 }
 
 export interface Response<T> {
@@ -72,6 +77,10 @@ export function net_setPoint(param: ISetPointParam): Promise<Response<void>> {
 
 export function net_clearUnreadMsg(param: IClearUnreadParam): Promise<Response<IMessage[]>> {
     return post<Response<IMessage[]>>(clearUnreadMsgUrl, param);
+}
+
+export function net_setPushKey(param: ISetKeyParam): Promise<Response<any>> {
+    return post<Response<any>>(setPushKey, param);
 }
 
 
