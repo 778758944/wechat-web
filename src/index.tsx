@@ -25,7 +25,7 @@ allSvgs.forEach((path: string) => {
 let store = createStore(rootReducer, applyMiddleware(ReduxThunk, logger));
 
 // register serviceworker;
-registerSw();
+// registerSw();
 
 
 

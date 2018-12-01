@@ -11,6 +11,7 @@ import toast from "antd-mobile/es/toast"
 import "antd-mobile/es/toast/style/index.css"
 import "./VideoCall.less"
 import { ISignalMsg, isDataString, StringMsg } from "../network/Signal";
+import WeChatNotify from "../notification"
 
 
 interface IParam {
@@ -42,6 +43,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
     private localVideoStream: MediaStream;
     private remoteVideoStream: MediaStream;
     private remoteAudioStream: MediaStream;
+    private notify: WeChatNotify;
 
     constructor(props: IProps) {
         super(props);
@@ -83,11 +85,18 @@ class VideoCall extends React.Component<IProps, IVideoState> {
 
     componentDidMount() {
         const { currentFriend } = this.props;
+        this.notify = WeChatNotify.getInstance();
+        this.notify.playVideoNotice();
         currentFriend.id && this.getMedia();
     }
 
     componentWillUnmount() {
         this.cutStream();
+        if (this.state.isConnect) {
+            this.notify.playVideoDownNotify();
+        } else {
+            this.notify.stopNotify();
+        }
         this.peer && this.peer.removeAllPeerListener();
         if (this.socket) {
             this.socket.unSubscribeSignal("bye", this.receiveHangdownMsg);
@@ -123,6 +132,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
     }
 
     private handleConnection() {
+        this.notify.stopNotify();
         this.setState({
             isConnect: true
         });

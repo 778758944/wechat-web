@@ -11,8 +11,8 @@ import MessageView from "./Message"
 import { mockMineMsg, mockOtherMsg, msgArr } from "../mock"
 import SvgIcon from "./Icon"
 import { getUTCTimeStamp, disableOverBounce } from "../util"
-import { ISignalMsg } from "../network/Signal"
 import * as PropTypes from "prop-types"
+import WeChatNotify from "../notification"
 
 interface IParam {
     id: string;
@@ -41,6 +41,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private moreItem = ["Album", "Video", "Draw"];
     private moreArea:HTMLDivElement;
     private isShowMore: boolean = false;
+    private notify: WeChatNotify;
 
     static contextTypes = {
         title: PropTypes.object
@@ -116,6 +117,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
         this.socket = SocketConnection.getInstance(socketUrl);
         this.socket.on("news", (msg: IMessage) => {
+            this.playNotify();
             handleNewMsg(msg);
         });
         this.socket.subscribeMsgRes(this.handleResFromNewMsg);
@@ -218,6 +220,11 @@ class Chat extends React.Component<IChatProps, IChatState> {
             default:
             return;
         }
+    }
+
+    private playNotify() {
+        if (!this.notify) this.notify = WeChatNotify.getInstance();
+        this.notify.playMsgNotice();
     }
 
     render() {

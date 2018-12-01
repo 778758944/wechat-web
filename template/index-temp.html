@@ -9,48 +9,11 @@
   <script src="https://cdn.bootcss.com/react-dom/15.6.2/react-dom.min.js"></script>
   <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-  <link rel='manifest' href='manifest.json'/>
-  <script>
-    /*
-    function sendSubscription(subscription) {
-      const subJson = subscription.toJSON();
-      fetch("/api/pushkeys/addkey", {
-        method: "POST",
-        body: JSON.stringify()
-      })
-    }
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js").then((registration) => {
-          console.log("register success");
-          // push notification
-          if ("PushManager" in window) {
-              registration.pushManager.getSubscription().then((subscription) => {
-                  // CHECKED WHETHER USER IS SUBSCRIBED
-                  if (subscription) {
-                      console.log("subscribed", subscription);
-                      console.log(subscription.toJSON());
-                      fetch("/api/pushkeys/addkey", {
-                        method: "POST",
-                        body: JSON.stringify()
-                      })
-                  } else {
-                      registration.pushManager.subscribe({userVisibleOnly: true}).then((subscription) => {
-                        console.log("subscribe success: ", subscription);
-                      }).catch((err) => {
-                        console.log(err);
-                      });
-                  }
-              });
-          }
-      }).catch((err) => {
-          console.error(err);
-      });
-  }
-  */
-  </script>
+  <!-- <link rel='manifest' href='manifest.json'/> -->
 </head>
 <body>
   <div id="root"></div>
+  <audio autoplay id="notice_audio"></audio>
   <script>
     var html = document.querySelector("html");
     var width = document.documentElement.clientWidth;

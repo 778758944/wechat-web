@@ -163,7 +163,6 @@ export default class SocketConnection {
     }
 
     subscribeMsgRes(fn: (isSuccess: boolean, id?: number) => any) {
-        console.log('add callback');
         if (!this.msgSendListener) this.msgSendListener = [];
         this.msgSendListener.push(fn);
     }

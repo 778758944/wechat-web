@@ -13,6 +13,7 @@ import FriendListItem from "./FriendListItem"
 import SocketConnection from "../network/SocketConnection"
 import { ISignalMsg, isRTCIceCandidate, isDataString } from "../network/Signal"
 import * as PropTypes from "prop-types";
+import WeChatNotify from "../notification"
 
 interface IProps extends RouteComponentProps {
     friendList: IFriend[];
@@ -27,6 +28,7 @@ interface IProps extends RouteComponentProps {
 class FriendList extends React.Component<IProps, {num: number}>
 {
     private socket: SocketConnection;
+    private notify: WeChatNotify;
     static contextTypes = {
         title: PropTypes.object,
     }
@@ -57,7 +59,8 @@ class FriendList extends React.Component<IProps, {num: number}>
         if (this.socket) this.socket.destory();
         this.socket = SocketConnection.getInstance(socketUrl);
         this.socket.on("addCounter", (msg: IMessage) => {
-            console.log("addCounter", msg);
+            // console.log("addCounter", msg);
+            this.playNotify();
             this.props.handleNewMsg(msg);
         });
         this.socket.subscribeSignal("offer", this.handleReceive.bind(this));
@@ -75,6 +78,11 @@ class FriendList extends React.Component<IProps, {num: number}>
         })
     }
 
+    private playNotify() {
+        if (!this.notify) this.notify = WeChatNotify.getInstance();
+        this.notify.playMsgNotice();
+    }
+
     render() {
         const { currentUser, friendList } = this.props;
         let currentUserEle: JSX.Element | null = null;
@@ -90,7 +98,7 @@ class FriendList extends React.Component<IProps, {num: number}>
 
 
         return (
-            <div className="demo">
+            <div>
                 {currentUserEle}
                 {friendListEle}
             </div>
