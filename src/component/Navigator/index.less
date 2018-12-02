@@ -1,6 +1,12 @@
 @import "../../css/common.less";
 
-@animateTime: 0.12s;
+@animateTime: 2s;
+
+.nav-safe-container {
+    padding-top: env(safe-area-inset-top);
+    background-color: #595959;
+}
+
 .nav-container {
     width: 100%;
     height: 100px;
@@ -45,10 +51,15 @@
 .nav-route-area {
     position: absolute;
     width: 100%;
-    top: 100px;
-    bottom: 0;
+    top: calc(100px + env(safe-area-inset-top));
+    // ios will move the whole page up
+    bottom: calc(0px - env(safe-area-inset-top));
     overflow: hidden;
     overflow-y: scroll;
+    div {
+        // transform: translateZ(1px);
+        will-change: transform;
+    }
 }
 
 

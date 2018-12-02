@@ -19,7 +19,7 @@ class Navigator extends React.Component<IProps, IState> {
     private routerStack: string[] = [];
     private switchInst: React.Component;
     private isAnimate: boolean;
-    private animateTime: number = 120;
+    private animateTime: number = 2000;
     static childContextTypes = {
         title: PropTypes.object.isRequired
     }
@@ -54,9 +54,8 @@ class Navigator extends React.Component<IProps, IState> {
                 this.isAnimate = true;
                 routerNode.className += `${routerNode.className ? ' ' : ''}nav-${action}-hide`;
                 setTimeout(() => {
-                    console.log(findDOMNode(this.switchInst));
                     this.forceUpdate(() => {
-                        const  nextRouterNode = findDOMNode(this.switchInst);
+                        const nextRouterNode = findDOMNode(this.switchInst);
                         if (nextRouterNode instanceof HTMLElement) {
                             nextRouterNode.className += `${routerNode.className ? ' ' : ''}nav-${action}-show-begin`;
                             setTimeout(() => {
@@ -131,7 +130,7 @@ class Navigator extends React.Component<IProps, IState> {
         const { isShowBack } = this.state;
         const { location } = this.props;
         return (
-            <div>
+            <div className="nav-safe-container">
                 <div className="nav-container">
                     {isShowBack ? <div className="nav-back" onClick={this.goBack}>
                         <SvgIcon className="nav-back-icon" type="chatBack" color="#fff"></SvgIcon>

@@ -204,6 +204,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
     handleInputFocus() {
         this.handleMsgAreaHeight();
+        // this.msgArea.style.height = "0";
     }
 
     handleVideoCall(isCaller: number) {

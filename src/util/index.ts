@@ -36,12 +36,12 @@ export function disableOverBounce(el: HTMLElement) {
       } else if(currentScroll === totalScroll) {
         el.scrollTop = top - 1
       }
-    })
+    }, {passive: false});
   
     el.addEventListener('touchmove', function(evt: ITouchEvent) {
       //if the content is actually scrollable, i.e. the content is long enough
       //that scrolling can occur
       if(el.offsetHeight < el.scrollHeight)
         evt._isScroller = true
-    })
+    }, {passive: true});
   }

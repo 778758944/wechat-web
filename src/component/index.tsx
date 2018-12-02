@@ -1,9 +1,7 @@
 import * as React from "react"
-import { Switch, RouteComponentProps, Route, Redirect } from "react-router-dom"
-import { Location, Action } from "history"
+import { RouteComponentProps, Route, Redirect } from "react-router-dom"
 import FriendList from "./FriendList"
 import Chat from "./Chat"
-import SvgIcon from "./Icon"
 import VideoCall from "./VideoCall"
 import { IState, IFriend } from "../store"
 import "./index.less"
@@ -11,7 +9,6 @@ import { connect, Dispatch } from "react-redux"
 import { initCurrentUserActionCreate } from "../action/CurrentUserAction"
 import { createInitFriendList } from "../action/FriendListAction"
 import { Response, net_getFriendList, IGetFriendList } from "../network"
-import * as PropTypes from "prop-types"
 import Nav from "./Navigator"
 
 

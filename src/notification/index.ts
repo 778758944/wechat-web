@@ -13,9 +13,9 @@ interface INotifySetting {
     isVibrate: boolean;
 }
 
-const msg_notice_url = `${location.origin}/src/source/msg_notify.mp3`;
-const video_call_notify = `${location.origin}/src/source/video_notify.mp3`;
-const video_down_notify = `${location.origin}/src/source/video_down_notify.mp3`;
+const msg_notice_url = `${location.origin}/static/msg_notify.mp3`;
+const video_call_notify = `${location.origin}/static/video_notify.mp3`;
+const video_down_notify = `${location.origin}/static/video_down_notify.mp3`;
 
 export default class WeChatNotify {
     private notifySetting: INotifySetting;
@@ -30,8 +30,10 @@ export default class WeChatNotify {
         // this.audioEle.style.visibility = "hidden";
         // this.audioEle.autoplay = true;
         // document.body.appendChild(this.audioEle);
-        const audio = document.querySelector("#notice_audio");
-        if (audio && audio instanceof HTMLAudioElement) this.audioEle = audio;
+        // const audio = document.querySelector("#notice_audio");
+        // if (audio && audio instanceof HTMLAudioElement) this.audioEle = audio;
+        this.audioEle = new Audio();
+        this.audioEle.autoplay = true;
         if ('vibrate' in  navigator) this.isVibrateSupport = true;
     }
 

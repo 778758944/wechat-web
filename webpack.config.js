@@ -1,5 +1,7 @@
 var webpack = require("webpack");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const theme = require("./package.json").theme;
 
 module.exports = {
@@ -40,7 +42,8 @@ module.exports = {
             {
                 test: /\.(css|less)$/,
                 use: [
-                    {loader: "style-loader"},
+                    // {loader: "style-loader"},
+                    MiniCssExtractPlugin.loader,
                     {loader: "css-loader"},
                     {loader: "postcss-loader"},
                     {loader: "less-loader", options: {modifyVars: theme}},
@@ -82,8 +85,15 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Chat",
             filename: "./index.html",
-            template: "./template/index-temp.html"
-        })
+            template: "./template/index-temp.html",
+            hash: true,
+        }),
+
+        new MiniCssExtractPlugin({
+            filename: "app.css",
+        }),
+
+        new BundleAnalyzerPlugin(),
     ],
     resolve: {
         // 引入文件可以省略后缀
@@ -98,6 +108,9 @@ module.exports = {
     externals: {
         "react": "React",
         "react-dom": "ReactDOM",
+        "react-route-dom": "ReactRouter",
+        "react-route": "ReactRouter",
+        "react-redux": "ReactRedux",
         "axios": "axios",
     }
 }
