@@ -42,6 +42,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private moreArea:HTMLDivElement;
     private isShowMore: boolean = false;
     private notify: WeChatNotify;
+    private fileInput: HTMLInputElement;
 
     static contextTypes = {
         title: PropTypes.object
@@ -62,6 +63,8 @@ class Chat extends React.Component<IChatProps, IChatState> {
         this.handleInputFocus = this.handleInputFocus.bind(this);
         this.handleVideoCall = this.handleVideoCall.bind(this);
         this.handleMoreClick = this.handleMoreClick.bind(this);
+        this.getFileInput = this.getFileInput.bind(this);
+        this.handleFileInputChange = this.handleFileInputChange.bind(this);
     }
 
     componentDidUpdate(prevProps: IChatProps) {
@@ -153,33 +156,34 @@ class Chat extends React.Component<IChatProps, IChatState> {
         });
     }
 
-    sendMsg() {
-        const { inputMsg } = this.state;
+    sendMsg(type: MsgContentType, data: string | ArrayBuffer) {
         const { currentUser, handleNewMsg, messages } = this.props;
-        if (inputMsg.trim()) {
-            const newMsg: IMessage = {
-                msg: inputMsg,
-                createAt: getUTCTimeStamp(),
-                to: parseInt(this.id),
-                from: currentUser.id,
-                type: MsgBelongType.myself,
-                lx: MsgContentType.text,
-                status: MsgStatus.pedding,
-            };
-            handleNewMsg(newMsg);
-            this.socket.sendMsg(newMsg, messages.length);
-            this.setState({
-                inputMsg: ""
-            });
-        }
+        const newMsg: IMessage = {
+            msg: data,
+            createAt: getUTCTimeStamp(),
+            to: parseInt(this.id),
+            from: currentUser.id,
+            type: MsgBelongType.myself,
+            lx: type,
+            status: MsgStatus.pedding,
+        };
+        handleNewMsg(newMsg);
+        this.socket.sendMsg(newMsg, messages.length);
     }
 
     handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         const keyCode = e.keyCode;
         if (keyCode === 13) {
             e.preventDefault();
-            this.sendMsg();
-            this.textarea.style.height = "auto";
+            let { inputMsg } = this.state;
+            inputMsg = inputMsg.trim();
+            if (inputMsg) {
+                this.sendMsg(MsgContentType.text, inputMsg);
+                this.setState({
+                    inputMsg: ""
+                });
+                this.textarea.style.height = "auto";
+            }
         }
     }
 
@@ -212,10 +216,19 @@ class Chat extends React.Component<IChatProps, IChatState> {
         history.push(`/video/${currentFriend.id}/${isCaller}`);
     }
 
+    private handleAlbum() {
+        if (this.fileInput) this.fileInput.click();
+    }
+
     handleMoreClick(key: string) {
+        console.log(key);
         switch(key) {
             case "Video":
                 this.handleVideoCall(1);
+            break;
+
+            case "Album":
+                this.handleAlbum();
             break;
 
             default:
@@ -226,6 +239,27 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private playNotify() {
         if (!this.notify) this.notify = WeChatNotify.getInstance();
         this.notify.playMsgNotice();
+    }
+
+    private handleFileInputChange(e: any) {
+        const image: File = e.target.files[0];
+        const fileReader = new FileReader();
+        fileReader.addEventListener("load", (e: any) => {
+            const imageData: string = e.target.result;
+            if (imageData) {
+                this.sendMsg(MsgContentType.image, imageData);
+            }
+
+        });
+        fileReader.readAsDataURL(image);
+
+
+    }
+
+    private getFileInput(e: HTMLInputElement | null) {
+        if (e) {
+            this.fileInput = e;
+        }
     }
 
     render() {
@@ -281,6 +315,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
                         })}
                     </div>
                 </div>
+                <input onChange={this.handleFileInputChange} className="chat-file-input" type="file" accept="image/jpeg, image/png" ref={this.getFileInput}/>
             </div>
         )
     }

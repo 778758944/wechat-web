@@ -25,7 +25,7 @@ export default class MessageView extends React.Component<IProps, {}> {
                 return <TextMsg text={msg.msg} isMySelf={isMyself}/>;
             
             case MsgContentType.image:
-                return <ImageMsg />;
+                return <ImageMsg imageData={msg.msg} />;
 
             case MsgContentType.audio:
                 return <AudioMsg />;

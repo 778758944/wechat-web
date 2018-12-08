@@ -19,7 +19,7 @@ class Navigator extends React.Component<IProps, IState> {
     private routerStack: string[] = [];
     private switchInst: React.Component;
     private isAnimate: boolean;
-    private animateTime: number = 2000;
+    private animateTime: number = 200;
     static childContextTypes = {
         title: PropTypes.object.isRequired
     }
