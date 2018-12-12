@@ -93,7 +93,7 @@ module.exports = {
             filename: "app.css",
         }),
 
-        new BundleAnalyzerPlugin(),
+        // new BundleAnalyzerPlugin(),
     ],
     resolve: {
         // 引入文件可以省略后缀
@@ -112,5 +112,8 @@ module.exports = {
         "react-route": "ReactRouter",
         "react-redux": "ReactRedux",
         "axios": "axios",
+    },
+    node: {
+        fs: 'empty',
     }
 }

@@ -1,8 +1,34 @@
-.image-msg-img {
-    width: 0;
-    height: 0;
-    border: 1px solid #d4d4d4;
-    border-radius: 5px;
+.image-view-wrap {
+    display: none;
+    background-repeat: no-repeat;
+    background-position: center center;
     overflow: hidden;
+    border: 1px solid #d4d4d4;
+    border-radius: 10px;
+    background-size: cover;
+}
+
+.image-view-wrap-full {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: 0 0;
+    display: none;
+    transition: opacity .2s ease-out;
+}
+
+.image-view-img-full {
+    position: fixed;
     object-fit: cover;
+    pointer-events: none;
+    display: none;
+    transform-origin: 0 0;
+}
+
+.image-view-img-ani {
+    transition: transform .2s ease-out;
 }

@@ -51,15 +51,13 @@
 .nav-route-area {
     position: absolute;
     width: 100%;
+    top: 100px;
     top: calc(100px + env(safe-area-inset-top));
     // ios will move the whole page up
+    bottom: 0;
     bottom: calc(0px - env(safe-area-inset-top));
     overflow: hidden;
     overflow-y: scroll;
-    div {
-        // transform: translateZ(1px);
-        will-change: transform;
-    }
 }
 
 
