@@ -164,7 +164,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         this.peer.on("addtrack", this.handleRemoteTrack);
         let r = await this.peer.createConnection();
         if (!r) {
-            toast.fail("makecall failed");
+            toast.fail("make call failed");
         }
     }
 

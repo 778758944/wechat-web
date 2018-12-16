@@ -1,5 +1,7 @@
 import * as React from "react"
 import ColorQuantizer from "../../../ColorQuantizer"
+import toast from "antd-mobile/es/toast"
+import "antd-mobile/es/toast/style/index.css"
 import "./index.less"
 
 interface IProps {
@@ -161,9 +163,15 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private async handleImageClick(e: React.SyntheticEvent<HTMLDivElement>) {
         if (!this.isFull) {
             if (!this.cq) {
-                this.cq = await ColorQuantizer.getInstance();
+                try {
+                    this.cq = await ColorQuantizer.getInstance();
+                    this.showFullImage();
+                } catch(err) {
+                    toast.fail("Show image failed", 2);
+                }
+            } else {
+                this.showFullImage();
             }
-            this.showFullImage();
         } else {
             this.hideFullImage();
         }

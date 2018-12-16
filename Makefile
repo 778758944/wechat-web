@@ -33,15 +33,15 @@ COLORQUANTIZER_EXPORT_FUNCTION = \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=[\'cwrap\']
 
 
-src/compiled/ColorQuantizer.bc: ./src/c/ColorQuantizer/ColorQuantizer.c
+./compiled/ColorQuantizer.bc: ./src/c/ColorQuantizer/ColorQuantizer.c
 	emcc \
 		$(CFLAGS) \
 		src/c/ColorQuantizer/ColorQuantizer.c \
-		-o src/compiled/ColorQuantizer.bc
+		-o ./compiled/ColorQuantizer.bc
 
-ColorQuantizer: src/compiled/ColorQuantizer.bc
+ColorQuantizer: ./compiled/ColorQuantizer.bc
 	emcc \
 		$(WASM_OPTIONS) \
 		$(COLORQUANTIZER_EXPORT_FUNCTION) \
-		src/compiled/ColorQuantizer.bc \
-		-o src/wasm/ColorQuantizer.js 
+		./compiled/ColorQuantizer.bc \
+		-o ./wasm/ColorQuantizer.js 

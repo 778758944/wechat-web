@@ -1,5 +1,4 @@
 import loadWasm from "../wasm"
-import { resolve4 } from "dns";
 
 interface IConfig {
     wasmBinary: ArrayBuffer;
@@ -23,9 +22,9 @@ export default class ColorQuantizer {
     }
 
     public async initWasm(): Promise<boolean> {
-        const init = await import("../wasm/ColorQuantizer.js").catch((err) => console.log(err));
-        const buf = await loadWasm("./src/wasm/ColorQuantizer.wasm").catch((err) => console.log(err));
-        if (init && buf) {
+        try {
+            const init = await import("../../wasm/ColorQuantizer.js");
+            const buf = await loadWasm("/wasm/ColorQuantizer.wasm");
             let initWithConfig: Function;
             if (typeof init === "function") {
                 initWithConfig = init;
@@ -41,11 +40,15 @@ export default class ColorQuantizer {
                     } catch(e) {
                         reject(false);
                     }
-                })
-                const r = await init_promise.catch(() => {});
+                });
+                const r = await init_promise;
                 return !!r;
             }
+        } catch (err) {
+            console.log(err);
+            return false;
         }
+
         return false;
     }
 
