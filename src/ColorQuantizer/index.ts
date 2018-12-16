@@ -1,7 +1,9 @@
 import loadWasm from "../wasm"
+import { resolve4 } from "dns";
 
 interface IConfig {
     wasmBinary: ArrayBuffer;
+    onRuntimeInitialized: () => void;
 }
 
 interface Init {
@@ -18,18 +20,33 @@ export default class ColorQuantizer {
     private constructor() {
         this.image = new Image();
         this.image.decoding = "async";
-        let initWithConfig: Function;
-        import("../wasm/ColorQuantizer.js").then((init) => {
-            if (typeof init === 'function') initWithConfig = init;
-            return loadWasm("./src/wasm/ColorQuantizer.wasm");
-        }).then((buf) => {
-            const config: IConfig = {
-                wasmBinary: buf
-            };
-            this.wasmObject = initWithConfig(config);
-        }).catch((err) => {
-            console.error(err);
-        });
+    }
+
+    public async initWasm(): Promise<boolean> {
+        const init = await import("../wasm/ColorQuantizer.js").catch((err) => console.log(err));
+        const buf = await loadWasm("./src/wasm/ColorQuantizer.wasm").catch((err) => console.log(err));
+        if (init && buf) {
+            let initWithConfig: Function;
+            if (typeof init === "function") {
+                initWithConfig = init;
+                const init_promise = new Promise((resolve, reject) => {
+                    const config: IConfig = {
+                        wasmBinary: buf,
+                        onRuntimeInitialized() {
+                            resolve(true);
+                        }
+                    };
+                    try {
+                        this.wasmObject = initWithConfig(config);
+                    } catch(e) {
+                        reject(false);
+                    }
+                })
+                const r = await init_promise.catch(() => {});
+                return !!r;
+            }
+        }
+        return false;
     }
 
     private getRgbData(image: string): ImageData | undefined {
@@ -42,17 +59,15 @@ export default class ColorQuantizer {
             canvas.width = cvsWidth;
             canvas.height = cvsHeight;
             ctx.drawImage(this.image, 0, 0, width, height, 0, 0, cvsWidth, cvsHeight);
-            /*
-            var a = document.querySelector(".chat-msg-area");
-            if (a) a.appendChild(canvas);
-            */
             return ctx.getImageData(0, 0, cvsWidth, cvsHeight);
         }
     }
 
-    public static getInstance(): ColorQuantizer {
+    public static async getInstance(): Promise<ColorQuantizer> {
         if (!this.inst) {
             this.inst = new ColorQuantizer();
+            const r = await this.inst.initWasm();
+            return this.inst;
         }
         return this.inst;
     }
@@ -67,14 +82,8 @@ export default class ColorQuantizer {
             const dataHeap = new Uint8Array(this.wasmObject.HEAPU8.buffer, p, size);
             dataHeap.set(new Uint8Array(imageData.buffer));
             const colorOffset = this.wasmObject._getImageThemeColor(dataHeap.byteOffset, dataHeap.byteLength, 8);
-            console.log(colorOffset);
             const rgb = new Uint8Array(this.wasmObject.HEAPU8.buffer, colorOffset, 3);
             let a: HTMLDivElement | null = document.querySelector(".chat-msg-area");
-            /*
-            if (a) {
-                a.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-            }
-            */
             themeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
             this.wasmObject._free(p);
             this.wasmObject._free(colorOffset);

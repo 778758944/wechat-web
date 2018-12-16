@@ -126,39 +126,46 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         this.imageEle = e.currentTarget;
     }
 
-    private handleImageClick(e: React.SyntheticEvent<HTMLDivElement>) {
+    private showFullImage() {
+        const themeColor = this.cq.getThemeColor(this.props.imageData);
+        this.fullEle.style.backgroundColor = themeColor;
+        this.fullEle.style.pointerEvents = "all";
+        this.fullEle.style.display = "block";
+        const { left, top } = this.imageWrap.getBoundingClientRect();
+        this.thumbStyle = `translate(${left - this.imagePosx}px, ${top - this.imagePosy}px) scale(${this.thumbWidth/this.imageWidth}, ${this.thumbHeight/this.imageHeight})`;
+        this.imageEle.style.transform = this.thumbStyle;
+        this.imageEle.style.display = "block";
+        this.imageWrap.style.visibility = "hidden";
+        this.imageWrap.style.pointerEvents = "none";
+        if (this.disappearTimer) clearTimeout(this.disappearTimer);
+        setTimeout(() => {
+            this.imageEle.classList.add("image-view-img-ani");
+            this.imageEle.style.transform = "translate(0, 0) scale(1, 1)";
+            this.fullEle.style.opacity = "1";
+        }, 0);
+    }
+
+    private hideFullImage() {
+        this.fullEle.style.opacity = "0";
+        this.fullEle.style.pointerEvents = "none";
+        this.imageEle.style.transform = this.thumbStyle;
+        this.disappearTimer = setTimeout(() => {
+            this.imageEle.classList.remove("image-view-img-ani");
+            this.imageEle.style.display = "none";
+            this.fullEle.style.display = "none";
+            this.imageWrap.style.visibility = "visible";
+            this.imageWrap.style.pointerEvents = "all";
+        }, 200);
+    }
+
+    private async handleImageClick(e: React.SyntheticEvent<HTMLDivElement>) {
         if (!this.isFull) {
             if (!this.cq) {
-                this.cq = ColorQuantizer.getInstance();
-                return;
+                this.cq = await ColorQuantizer.getInstance();
             }
-            const themeColor = this.cq.getThemeColor(this.props.imageData);
-            this.fullEle.style.backgroundColor = themeColor;
-            this.fullEle.style.pointerEvents = "all";
-            this.fullEle.style.display = "block";
-
-            const { left, top } = this.imageWrap.getBoundingClientRect();
-            this.thumbStyle = `translate(${left - this.imagePosx}px, ${top - this.imagePosy}px) scale(${this.thumbWidth/this.imageWidth}, ${this.thumbHeight/this.imageHeight})`;
-            this.imageEle.style.transform = this.thumbStyle;
-            this.imageEle.style.display = "block";
-            this.imageWrap.style.visibility = "hidden";
-            if (this.disappearTimer) clearTimeout(this.disappearTimer);
-            setTimeout(() => {
-                this.imageEle.classList.add("image-view-img-ani");
-                this.imageEle.style.transform = "translate(0, 0) scale(1, 1)";
-                this.fullEle.style.opacity = "1";
-            }, 0);
+            this.showFullImage();
         } else {
-            this.fullEle.style.opacity = "0";
-            this.fullEle.style.pointerEvents = "none";
-            this.imageEle.style.transform = this.thumbStyle;
-            this.disappearTimer = setTimeout(() => {
-                this.imageEle.classList.remove("image-view-img-ani");
-                this.imageEle.style.display = "none";
-                this.fullEle.style.display = "none";
-                this.imageWrap.style.visibility = "visible";
-            }, 200);
-
+            this.hideFullImage();
         }
 
         this.isFull = !this.isFull;
