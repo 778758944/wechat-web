@@ -1,7 +1,9 @@
 import loadWasm from "../wasm"
+import { resolve4 } from "dns";
 
 interface IConfig {
     wasmBinary: ArrayBuffer;
+    onRuntimeInitialized: () => void;
 }
 
 interface Init {
@@ -18,18 +20,33 @@ export default class ColorQuantizer {
     private constructor() {
         this.image = new Image();
         this.image.decoding = "async";
-        let initWithConfig: Function;
-        import("../wasm/ColorQuantizer.js").then((init) => {
-            if (typeof init === 'function') initWithConfig = init;
-            return loadWasm("./src/wasm/ColorQuantizer.wasm");
-        }).then((buf) => {
-            const config: IConfig = {
-                wasmBinary: buf
-            };
-            this.wasmObject = initWithConfig(config);
-        }).catch((err) => {
-            console.error(err);
-        });
+    }
+
+    public async initWasm(): Promise<boolean> {
+        const init = await import("../wasm/ColorQuantizer.js").catch((err) => console.log(err));
+        const buf = await loadWasm("./src/wasm/ColorQuantizer.wasm").catch((err) => console.log(err));
+        if (init && buf) {
+            let initWithConfig: Function;
+            if (typeof init === "function") {
+                initWithConfig = init;
+                const init_promise = new Promise((resolve, reject) => {
+                    const config: IConfig = {
+                        wasmBinary: buf,
+                        onRuntimeInitialized() {
+                            resolve(true);
+                        }
+                    };
+                    try {
+                        this.wasmObject = initWithConfig(config);
+                    } catch(e) {
+                        reject(false);
+                    }
+                })
+                const r = await init_promise.catch(() => {});
+                return !!r;
+            }
+        }
+        return false;
     }
 
     private getRgbData(image: string): ImageData | undefined {
@@ -46,9 +63,11 @@ export default class ColorQuantizer {
         }
     }
 
-    public static getInstance(): ColorQuantizer {
+    public static async getInstance(): Promise<ColorQuantizer> {
         if (!this.inst) {
             this.inst = new ColorQuantizer();
+            const r = await this.inst.initWasm();
+            return this.inst;
         }
         return this.inst;
     }
