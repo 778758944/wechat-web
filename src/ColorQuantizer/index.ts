@@ -42,10 +42,6 @@ export default class ColorQuantizer {
             canvas.width = cvsWidth;
             canvas.height = cvsHeight;
             ctx.drawImage(this.image, 0, 0, width, height, 0, 0, cvsWidth, cvsHeight);
-            /*
-            var a = document.querySelector(".chat-msg-area");
-            if (a) a.appendChild(canvas);
-            */
             return ctx.getImageData(0, 0, cvsWidth, cvsHeight);
         }
     }
@@ -67,14 +63,7 @@ export default class ColorQuantizer {
             const dataHeap = new Uint8Array(this.wasmObject.HEAPU8.buffer, p, size);
             dataHeap.set(new Uint8Array(imageData.buffer));
             const colorOffset = this.wasmObject._getImageThemeColor(dataHeap.byteOffset, dataHeap.byteLength, 8);
-            console.log(colorOffset);
             const rgb = new Uint8Array(this.wasmObject.HEAPU8.buffer, colorOffset, 3);
-            let a: HTMLDivElement | null = document.querySelector(".chat-msg-area");
-            /*
-            if (a) {
-                a.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-            }
-            */
             themeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
             this.wasmObject._free(p);
             this.wasmObject._free(colorOffset);

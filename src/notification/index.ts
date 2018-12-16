@@ -26,13 +26,8 @@ export default class WeChatNotify {
     private timer: any;
     private constructor() {
         this.notifySetting = WeChatNotify.getNotifySetting();
-        // this.audioEle = document.createElement("audio");
-        // this.audioEle.style.visibility = "hidden";
-        // this.audioEle.autoplay = true;
-        // document.body.appendChild(this.audioEle);
-        // const audio = document.querySelector("#notice_audio");
-        // if (audio && audio instanceof HTMLAudioElement) this.audioEle = audio;
-        this.audioEle = new Audio();
+        const audio = document.querySelector("#notice_audio");
+        if (audio && audio instanceof HTMLAudioElement) this.audioEle = audio;
         this.audioEle.autoplay = true;
         if ('vibrate' in  navigator) this.isVibrateSupport = true;
     }
