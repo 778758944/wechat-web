@@ -13,6 +13,7 @@ import SvgIcon from "./Icon"
 import { getUTCTimeStamp, disableOverBounce } from "../util"
 import * as PropTypes from "prop-types"
 import WeChatNotify from "../notification"
+import ImageSender from "../ImageSender"
 
 interface IParam {
     id: string;
@@ -43,6 +44,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private isShowMore: boolean = false;
     private notify: WeChatNotify;
     private fileInput: HTMLInputElement;
+    private imageSender: ImageSender;
 
     static contextTypes = {
         title: PropTypes.object
@@ -65,6 +67,18 @@ class Chat extends React.Component<IChatProps, IChatState> {
         this.handleMoreClick = this.handleMoreClick.bind(this);
         this.getFileInput = this.getFileInput.bind(this);
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
+
+        // initial image_sender
+        this.imageSender = ImageSender.getInstance();
+
+        // initial jpeg_encode
+        /*
+        JpegEncode.getInstance().then((inst: JpegEncode | null) => {
+            if (inst) {
+                this.jpegEncode = inst;
+            }
+        }).catch(err => console.log(err));
+        */
     }
 
     componentDidUpdate(prevProps: IChatProps) {
@@ -241,17 +255,13 @@ class Chat extends React.Component<IChatProps, IChatState> {
         this.notify.playMsgNotice();
     }
 
-    private handleFileInputChange(e: any) {
+    private async handleFileInputChange(e: any) {
         const image: File = e.target.files[0];
-        const fileReader = new FileReader();
-        fileReader.addEventListener("load", (e: any) => {
-            const imageData: string = e.target.result;
-            if (imageData) {
-                this.sendMsg(MsgContentType.image, imageData);
-            }
+        const sendData: ArrayBuffer | void = await this.imageSender.getSendData(image);
 
-        });
-        fileReader.readAsDataURL(image);
+        if (sendData) {
+            this.sendMsg(MsgContentType.image, sendData)
+        };
 
 
     }

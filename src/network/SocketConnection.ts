@@ -110,7 +110,7 @@ export default class SocketConnection {
 
     }
 
-    public sendMsg(msg: IMessage, index: number, timeout: number = 5) {
+    public sendMsg(msg: IMessage, index: number, timeout: number = 15) {
         const timer = setTimeout(() => {
             this.msgStore.delete(msg.createAt);
             this.msgSendListener && this.msgSendListener.forEach((fn) => {

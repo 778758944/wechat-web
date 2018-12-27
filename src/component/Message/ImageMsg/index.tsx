@@ -23,6 +23,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private isFull: boolean;
     private imageEle: HTMLImageElement;
     private fullEle: HTMLDivElement;
+    private chatWrap: HTMLDivElement | null;
     private thumbWidth: number;
     private thumbHeight: number;
     private screenWidth: number;
@@ -34,14 +35,21 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private thumbStyle: string;
     private fullStyle: string = "translate(0px, 0px) scale(1, 1)";
     private disappearTimer: any;
+    private imageUrl: string;
     constructor(props: IProps) {
         super(props);
         this.isFull = false;
         this.handleImageClick = this.handleImageClick.bind(this);
         this.handleImageOnLoad = this.handleImageOnLoad.bind(this);
+        this.chatWrap = document.querySelector(".chat-msg-area");
         this.state = {
             fullImageStyle: null
         }
+
+        // construct image url from arraybuffer
+        const { imageData } = this.props;
+        const imageBlob = new Blob([imageData], {type: "image/jpeg"});
+        this.imageUrl = window.URL.createObjectURL(imageBlob);
 
         if (document.documentElement) {
             this.screenHeight = document.documentElement.clientHeight;
@@ -129,7 +137,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     }
 
     private showFullImage() {
-        const themeColor = this.cq.getThemeColor(this.props.imageData);
+        const themeColor = this.cq.getThemeColor(this.imageUrl);
         this.fullEle.style.backgroundColor = themeColor;
         this.fullEle.style.pointerEvents = "all";
         this.fullEle.style.display = "block";
@@ -139,6 +147,8 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         this.imageEle.style.display = "block";
         this.imageWrap.style.visibility = "hidden";
         this.imageWrap.style.pointerEvents = "none";
+        // fix ios overflow bugger
+        if (this.chatWrap) this.chatWrap.style.overflowY = "visible";
         if (this.disappearTimer) clearTimeout(this.disappearTimer);
         setTimeout(() => {
             this.imageEle.classList.add("image-view-img-ani");
@@ -151,6 +161,8 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         this.fullEle.style.opacity = "0";
         this.fullEle.style.pointerEvents = "none";
         this.imageEle.style.transform = this.thumbStyle;
+        // fix ios overflow bugger
+        if (this.chatWrap) this.chatWrap.style.overflowY = "scroll";
         this.disappearTimer = setTimeout(() => {
             this.imageEle.classList.remove("image-view-img-ani");
             this.imageEle.style.display = "none";
@@ -187,7 +199,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                 <div className="image-view-wrap"  ref={(e) => {
                     if (e) {
                         this.imageWrap = e;
-                        this.imageWrap.style.backgroundImage = `url(${imageData})`;
+                        this.imageWrap.style.backgroundImage = `url(${this.imageUrl})`;
                     }
                 }} onClick={this.handleImageClick}>
                 </div>
@@ -198,7 +210,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                     }
                 }} className="image-view-wrap-full" onClick={this.handleImageClick}>
                 </div>
-                <img style={fullImageStyle} className="image-view-img-full" src={imageData} onLoad={this.handleImageOnLoad}/>
+                <img style={fullImageStyle} className="image-view-img-full" src={this.imageUrl} onLoad={this.handleImageOnLoad}/>
             </div>
         )
     }

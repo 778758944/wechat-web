@@ -5,3 +5,8 @@ export default function loadWasm(path: string): Promise<ArrayBuffer> {
         return Promise.reject(err)
     });
 }
+
+// async means it will return a promise
+export async function initWasm(name: string) {
+    
+}
