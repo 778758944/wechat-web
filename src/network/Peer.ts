@@ -1,5 +1,5 @@
 import SocketConnection from "./SocketConnection"
-import { ISignalMsg, SignalType, isRTCIceCandidate, isDataString } from "./Signal"
+import { ISignalMsg, SignalType, isRTCIceCandidate, isDataString, CallType } from "./Signal"
 
 interface ConnectCallBack {
     (e: MediaStreamEvent): void;
@@ -9,10 +9,10 @@ interface DisConnectCallBack {
     (): void;
 }
 
-type PeerEvent = "connect" | "disconnect" | "addtrack";
+type PeerEvent = "connect" | "disconnect" | "addtrack" | "datachannel";
 
 interface CallBack {
-    (e?: MediaStreamTrack): void;
+    (e?: MediaStreamTrack | RTCDataChannelEvent): void;
 }
 
 class Peer {
@@ -36,7 +36,9 @@ class Peer {
    private audioSetId: RTCRtpSender;
    private videoTrack: MediaStreamTrack;
    private listener: Map<PeerEvent, CallBack[]>;
-   private isConnected: boolean;
+   private isConnected: boolean = false;
+   private channel: RTCDataChannel;
+   private channelId: string = "_WECHAT_SEND_FILE_CHANEL";
 
    constructor(to: number, from: number, socket: SocketConnection) {
        this.socket = socket;
@@ -46,6 +48,14 @@ class Peer {
        this.handleAddStream = this.handleAddStream.bind(this);
        this.handleConnectStateChange = this.handleConnectStateChange.bind(this);
        this.handleAddTrack = this.handleAddTrack.bind(this);
+
+
+       this.toWho = to;
+       this.fromWho = from;
+       this.handleCandidateMsg = this.handleCandidateMsg.bind(this);
+       this.receiveSession = this.receiveSession.bind(this);
+       this.handleCandidateMsg = this.handleCandidateMsg.bind(this);
+       this.handleDataChannel = this.handleDataChannel.bind(this);
 
        this.peer.addEventListener("icecandidate", this.handleIcecandidate);
     //    this.peer.addEventListener("addstream", this.handleAddStream);
@@ -81,16 +91,16 @@ class Peer {
            console.log("statsended", e);
        });
 
+       this.peer.addEventListener("datachannel", this.handleDataChannel);
+   }
 
-
-
-       this.toWho = to;
-       this.fromWho = from;
-
-    //    this.handleCallSignalMsg = this.handleCallSignalMsg.bind(this);
-       this.handleCandidateMsg = this.handleCandidateMsg.bind(this);
-       this.receiveSession = this.receiveSession.bind(this);
-       this.handleCandidateMsg = this.handleCandidateMsg.bind(this);
+   private handleDataChannel(e: RTCDataChannelEvent) {
+       if (this.listener) {
+           const arr = this.listener.get("datachannel");
+           if (arr) {
+               arr.forEach((cb: CallBack) => cb(e));
+           }
+       }
    }
 
    private handleAddTrack(e: RTCTrackEvent) {
@@ -110,7 +120,7 @@ class Peer {
    }
 
    private handleConnectStateChange(e: any) {
-       console.log('connection', this);
+       console.log('connection', e);
        const state = this.peer.iceConnectionState || this.peer.connectionState;
        let listeners: CallBack[] | undefined;
        if (state === "connected" || state === "completed") {
@@ -175,7 +185,7 @@ class Peer {
         });
    }
 
-   public async createConnection() {
+   public async createConnection(type: CallType) {
        console.log("start to create offer");
        const offer: RTCSessionDescriptionInit | void = await this.peer.createOffer().catch(e => console.error(e));
        if (offer) {
@@ -185,6 +195,7 @@ class Peer {
                data: offer,
                to: this.toWho,
                from: this.fromWho,
+               type,
            }
 
         //    this.socket.subscribeSignal(this.handleCallSignalMsg);
@@ -199,6 +210,7 @@ class Peer {
    }
 
    public async receiveCall() {
+       console.log("start to pick up phone");
        const videoOffer = SocketConnection.videoOffer;
        const candidates = SocketConnection.receiveCandidate;
        if (videoOffer) {
@@ -220,6 +232,7 @@ class Peer {
                this.socket.subscribeSignal("offer", this.receiveSession);
                this.socket.subscribeSignal("candidate", this.handleCandidateMsg);
                this.socket.sendSignalMsg(msg);
+               console.log("send anwser");
            }
        }
    }
@@ -291,6 +304,20 @@ class Peer {
                this.listener.set(eventName, arr);
            }
        }
+   }
+
+   public createChannel() {
+        return this.peer.createDataChannel(this.channelId, {ordered: true});
+   }
+
+   public sendData(data: ArrayBuffer) {
+       /*
+       if (!this.channel) {
+           this.channel = this.peer.createDataChannel(this.channelId, {ordered: true});
+       }
+       */
+
+       this.channel.send(data);
    }
 }
 

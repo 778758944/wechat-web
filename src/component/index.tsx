@@ -10,6 +10,11 @@ import { initCurrentUserActionCreate } from "../action/CurrentUserAction"
 import { createInitFriendList } from "../action/FriendListAction"
 import { Response, net_getFriendList, IGetFriendList } from "../network"
 import Nav from "./Navigator"
+import SocketConnection from "../network/SocketConnection"
+import { socketUrl } from "../network"
+import { ISignalMsg } from "../network/Signal"
+import Peer from "../network/Peer"
+import FileManager from "../network/FileManager"
 
 
 interface IProps extends RouteComponentProps {
@@ -25,6 +30,8 @@ interface IHomeState {
 } 
 
 class Home extends React.Component<IProps, {}> {
+    private socket: SocketConnection;
+    private peer: Peer;
 
     public componentDidMount() {
         // console.log(this.props);
@@ -39,6 +46,37 @@ class Home extends React.Component<IProps, {}> {
         }).catch((err) => {
             history.replace("/login");
         });
+
+        this.socket = SocketConnection.getInstance(socketUrl);
+        this.handleOfferMsg = this.handleOfferMsg.bind(this);
+        this.socket.subscribeSignal("offer", this.handleOfferMsg);
+    }
+
+    private handleCallReceive(msg: ISignalMsg) {
+        const { from } = msg;
+        const { history } = this.props;
+        history.push(`/video/${from}/0`); 
+    }
+
+    private handleFileSend(msg: ISignalMsg) {
+        const { type } = msg;
+        const { from, to } = msg;
+        // this.peer = new Peer(f)
+        const fileReceiver = FileManager.getInstance(from, to);
+        fileReceiver.receiveFile();
+    }
+
+    private handleOfferMsg(msg: ISignalMsg) {
+        const { type } = msg;
+        switch(type) {
+            case "file_translate":
+                this.handleFileSend(msg);
+            break;
+
+            case "video_call":
+                this.handleCallReceive(msg);
+            break;
+        }
     }
     public render() {
         return (

@@ -4,6 +4,7 @@ import Avator from "../Avator"
 import TextMsg from "./TextMsg"
 import ImageMsg from "./ImageMsg"
 import AudioMsg from "./AudioMsg"
+import FileMsg from "./FileMsg"
 import Icon from "antd-mobile/es/icon"
 import "antd-mobile/es/icon/style/index.css"
 import SvgIcon from "../Icon"
@@ -29,6 +30,9 @@ export default class MessageView extends React.Component<IProps, {}> {
 
             case MsgContentType.audio:
                 return <AudioMsg />;
+
+            case MsgContentType.file:
+                return <FileMsg fileinfo={msg.msg} />
         }
     }
     render() {

@@ -63,13 +63,7 @@ class FriendList extends React.Component<IProps, {num: number}>
             this.playNotify();
             this.props.handleNewMsg(msg);
         });
-        this.socket.subscribeSignal("offer", this.handleReceive.bind(this));
-    }
-
-    private handleReceive(msg: ISignalMsg) {
-        const { data, from } = msg;
-        const { history } = this.props;
-        history.push(`/video/${from}/0`); 
+        // this.socket.subscribeSignal("offer", this.handleReceive.bind(this));
     }
 
     private setPoint() {

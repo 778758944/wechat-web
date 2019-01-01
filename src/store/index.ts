@@ -8,6 +8,7 @@ export enum MsgContentType {
     text = "0",
     image = "img",
     audio = "wav",
+    file = "file",
 }
 
 export enum MsgStatus {

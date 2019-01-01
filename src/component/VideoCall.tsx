@@ -162,7 +162,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         this.peer.addStream(this.localStream);
         this.peer.on("connect", this.handleConnection);
         this.peer.on("addtrack", this.handleRemoteTrack);
-        let r = await this.peer.createConnection();
+        let r = await this.peer.createConnection("video_call");
         if (!r) {
             toast.fail("make call failed");
         }

@@ -14,6 +14,8 @@ import { getUTCTimeStamp, disableOverBounce } from "../util"
 import * as PropTypes from "prop-types"
 import WeChatNotify from "../notification"
 import ImageSender from "../ImageSender"
+import Peer from "../network/Peer"
+import FileManager from "../network/FileManager"
 
 interface IParam {
     id: string;
@@ -39,12 +41,14 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private textarea: HTMLTextAreaElement;
     private msgArea: HTMLDivElement;
     private msgAreaHeight: number;
-    private moreItem = ["Album", "Video", "Draw"];
+    private moreItem = ["Album", "Video", "Draw", "File"];
     private moreArea:HTMLDivElement;
     private isShowMore: boolean = false;
     private notify: WeChatNotify;
     private fileInput: HTMLInputElement;
     private imageSender: ImageSender;
+    private sendFileInput: HTMLInputElement;
+    private peer: Peer;
 
     static contextTypes = {
         title: PropTypes.object
@@ -67,6 +71,8 @@ class Chat extends React.Component<IChatProps, IChatState> {
         this.handleMoreClick = this.handleMoreClick.bind(this);
         this.getFileInput = this.getFileInput.bind(this);
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
+        this.getSendFileInput = this.getSendFileInput.bind(this);
+        this.handleSendFile = this.handleSendFile.bind(this);
 
         // initial image_sender
         this.imageSender = ImageSender.getInstance();
@@ -245,6 +251,10 @@ class Chat extends React.Component<IChatProps, IChatState> {
                 this.handleAlbum();
             break;
 
+            case "File":
+                if (this.sendFileInput) this.sendFileInput.click();
+            break;
+
             default:
             return;
         }
@@ -270,6 +280,31 @@ class Chat extends React.Component<IChatProps, IChatState> {
         if (e) {
             this.fileInput = e;
         }
+    }
+
+    // file send
+    private async handleSendFile(e: any) {
+        const file: File = e.target.files[0];
+        const { name, size, type } = file;
+        const { currentFriend, currentUser } = this.props;
+        if (name && size && type) {
+            const msg_data = JSON.stringify({name, size, type});
+            this.sendMsg(MsgContentType.file, msg_data);
+            const fileSender = FileManager.getInstance(currentFriend.id, currentUser.id);
+            fileSender.sendFile(file);
+            /*
+            if (!this.peer) this.peer = new Peer(currentFriend.id, currentUser.id, this.socket);
+            this.peer.createChannel();
+            this.peer.createConnection("file_translate");
+            this.peer.on("connect", () => {
+                console.log("peer connect");
+            });
+            */
+        }
+    }
+
+    private getSendFileInput(e: HTMLInputElement | null) {
+        if (e) this.sendFileInput = e;
     }
 
     render() {
@@ -326,6 +361,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
                     </div>
                 </div>
                 <input onChange={this.handleFileInputChange} className="chat-file-input" type="file" accept="image/jpeg, image/png" ref={this.getFileInput}/>
+                <input onChange={this.handleSendFile} className="chat-file-input" type="file" ref={this.getSendFileInput}/>
             </div>
         )
     }

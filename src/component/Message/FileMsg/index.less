@@ -1,0 +1,38 @@
+@import "../../../css/common.less";
+.file-msg-wrap {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-row-gap: 20px;
+    grid-column-gap: 15px;
+    padding: 24px 24px;
+    width: 422px;
+    background-color: #fff;
+    grid-template-areas: 
+    "icon name"
+    "icon size";
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+}
+
+.file-msg-icon {
+    grid-area: icon;
+    width: 90px;
+    height: 90px;
+}
+
+.file-msg-name {
+    font-size: @textMedium;
+    grid-area: name;
+    .nLineLimit(2);
+}
+
+.file-msg-size {
+    align-self: center;
+    font-size: @textSmall;
+    grid-area: size;
+    color: #888888;
+}
+
+
