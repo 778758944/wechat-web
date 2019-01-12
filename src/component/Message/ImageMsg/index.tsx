@@ -5,7 +5,7 @@ import "antd-mobile/es/toast/style/index.css"
 import "./index.less"
 
 interface IProps {
-    imageData: string;
+    imageData: ArrayBuffer;
 }
 
 interface IState {
