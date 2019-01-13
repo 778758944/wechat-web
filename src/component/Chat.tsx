@@ -268,29 +268,10 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
     private async handleFileInputChange(e: any) {
         const image: File = e.target.files[0];
-        console.time("getImageInfo");
-        const jpeginfo = new JpegInfo(image, 1024 * 2);
-        const orientation = await jpeginfo.get_orientation();
-        const size = await jpeginfo.get_image_size();
-        console.timeEnd("getImageInfo");
-
-
-
-        // get_jpeg_orientation(image);
-        /*
         const sendData: ArrayBuffer | void = await this.imageSender.getSendData(image);
-
         if (sendData) {
             this.sendMsg(MsgContentType.image, sendData)
         };
-        */
-        console.time("getArrayBuffer");
-        const fileReader = new FileReader();
-        fileReader.onload = function(e) {
-            console.timeEnd("getArrayBuffer");
-        }
-
-        fileReader.readAsDataURL(image);
 
 
     }

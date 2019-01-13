@@ -2,7 +2,7 @@ export interface CGSize {
     width: number;
     height: number;
 }
-class JpegInfo {
+export default class JpegInfo {
     private static JPEG_HEADER = parseInt("FFD8", 16);
     private static RST1 = parseInt("FFD0", 16);
     private static RST7 = parseInt("RST7", 16);
@@ -12,7 +12,7 @@ class JpegInfo {
     private static SOF2 = parseInt("FFC2", 16);
     private static EXIF_HEADER = parseInt("FFE1", 16);
     private static EXIF_DIRE_ORIEN = parseInt("0112", 16);
-    private UNIT: number;
+    private UNIT: number = 1024 * 10;
     private READED_BYTE: number;
     private jpeg_file: File;
     private offset: number;
@@ -21,10 +21,19 @@ class JpegInfo {
     private size_info: Uint8Array;
     private exif_info: Uint8Array;
     private is_exif_bigger_endian: boolean;
+    private isJpeg: boolean;
+    private totalSize: number;
+    private o_offset: number = 0;
     
-    public constructor(file: File, size: number) {
-        this.UNIT = size;
-        this.jpeg_file = file;
+    public constructor(file?: File, size?: number) {
+        if (file) {
+            this.jpeg_file = file;
+            this.totalSize = this.jpeg_file.size;
+
+        }
+
+        if (size) this.UNIT = size;
+
         this.READED_BYTE = 0;
         this.offset = 0;
         this.buf_size = 0;
@@ -33,7 +42,7 @@ class JpegInfo {
 
     private exifDiretoryReader(dire: number) {
         const exif_buf = this.exif_info;
-        let data: ArrayBuffer = new ArrayBuffer(0);
+        let data: Uint8Array = new Uint8Array(this.buffer, 0, 0);
         const exif_header_str = String.fromCharCode(exif_buf[0], exif_buf[1], exif_buf[2], exif_buf[3]);
         if (exif_header_str === "Exif" && exif_buf[4] === 0 && exif_buf[5] === 0) {
             const byte_order_str = String.fromCharCode(exif_buf[6], exif_buf[7]);
@@ -44,20 +53,20 @@ class JpegInfo {
             }
 
             // get ifd0 offset relative to byte_order_str(4 byte)
-            const ifd0_offset = this.getNumberFromData(new Uint8Array(exif_buf.buffer, 10, 4), this.is_exif_bigger_endian) 
+            const ifd0_offset = this.getNumberFromData(exif_buf.subarray(10, 14), this.is_exif_bigger_endian) 
             let exif_offset = ifd0_offset + 6;
             // get directory number in ifd0
-            const num_of_directory = this.getNumberFromData(new Uint8Array(exif_buf.buffer, exif_offset, 2), this.is_exif_bigger_endian);
+            const num_of_directory = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2), this.is_exif_bigger_endian);
             exif_offset += 2;
             
 
             for (let j = 0; j < num_of_directory; j++) {
-                const directory_header = this.getNumberFromData(new Uint8Array(exif_buf.buffer, exif_offset, 2), this.is_exif_bigger_endian);
+                const directory_header = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2), this.is_exif_bigger_endian);
                 if (directory_header === JpegInfo.EXIF_DIRE_ORIEN) {
-                    data = exif_buf.buffer.slice(exif_offset, exif_offset + 12);
+                    data = exif_buf.subarray(exif_offset, exif_offset + 12);
                     break;
                 }
-                exif_offset += 12;
+                exif_offset += bytes_of_directory;
             }
         }
 
@@ -67,22 +76,24 @@ class JpegInfo {
     public async get_orientation() {
         let orientation = 1;
         if (!this.exif_info) {
-            this.initReader();
             try {
                 this.exif_info = await this.JpegMarkerReader(JpegInfo.EXIF_HEADER);
             } catch(e) {
-                //
+                console.error("get orientation error:", e);
             }
         }
 
-        if (this.exif_info.length && this.exif_info.length > 0) {
+        if (this.exif_info && this.exif_info.length > 0) {
+            console.log("exif", this.exif_info);
             const orien_data = this.exifDiretoryReader(JpegInfo.EXIF_DIRE_ORIEN);
-            if (orien_data.byteLength > 0) {
+            console.log('orientation', orien_data);
+            if (orien_data.length > 0) {
                 let offset = 4;
-                const num_of_component = this.getNumberFromData(new Uint8Array(orien_data, offset, 4), this.is_exif_bigger_endian);
+                console.log(this.getNumberFromData(orien_data.subarray(2, 4), this.is_exif_bigger_endian));
+                const num_of_component = this.getNumberFromData(orien_data.subarray(offset, offset + 4), this.is_exif_bigger_endian);
                 offset += 4;
                 if (num_of_component === 1) {
-                    orientation = this.getNumberFromData(new Uint8Array(orien_data, offset, 4), this.is_exif_bigger_endian);
+                    orientation = this.getNumberFromData(orien_data.subarray(offset, offset + 4), this.is_exif_bigger_endian);
                 }
             }
         }
@@ -93,12 +104,16 @@ class JpegInfo {
 
     private async readByte(size: number): Promise<Uint8Array> {
         let data: Uint8Array;
-        if (this.buf_size < size) {
-            const { size: fileSize } = this.jpeg_file;
+        this.offset += this.o_offset;
+        if (this.buf_size < size + this.offset) {
+            const fileSize = this.totalSize;
             let start: number, end: number;
-            if (this.READED_BYTE + size > fileSize) return new Uint8Array(this.buffer, 0, 0);
+            if (this.READED_BYTE + size + this.o_offset > fileSize) {
+                return new Uint8Array(this.buffer, 0, 0);
+            }
+            this.READED_BYTE += this.o_offset;
             start = this.READED_BYTE;
-            if (this.READED_BYTE + this.UNIT > fileSize) {
+            if (start + this.UNIT > fileSize) {
                 end = fileSize;
             }  else {
                 const range_size = this.UNIT > size ? this.UNIT : size;
@@ -108,13 +123,13 @@ class JpegInfo {
             const blob = this.jpeg_file.slice(start, end);
             this.buffer = await this.readBlob(blob);
             this.offset = 0;
-            this.buf_size = end - start;
+            this.buf_size = this.buffer.byteLength;
         }
 
         data = new Uint8Array(this.buffer, this.offset, size);
         this.offset += size;
-        this.buf_size -= size;
         this.READED_BYTE += size;
+        this.o_offset = 0;
 
 
 
@@ -139,37 +154,45 @@ class JpegInfo {
     private async JpegMarkerReader(tag: number) {
         let isLoop = true;
         let data: Uint8Array = new Uint8Array(this.buffer, 0, 0);
-        const jpeg_header_data = await this.readByte(2);
-        if (jpeg_header_data.length === 2) {
-            const jpeg_header = this.getNumberFromData(jpeg_header_data, true);
-            if (jpeg_header === JpegInfo.JPEG_HEADER) {
-                while (isLoop) {
-                    const marker_header_data = await this.readByte(2);
-                    const marker_header = this.getNumberFromData(marker_header_data, true);
-                    if (marker_header <= JpegInfo.RST7 && marker_header >= JpegInfo.RST1) {
-                        continue;
-                    } else if (marker_header === JpegInfo.EOI) {
-                        break;
-                    } else if (tag === marker_header) {
-                        let data_size: number = 0;
-                        if (tag === JpegInfo.DRI) {
-                            data_size = 4;
-                        } else {
-                            const data_size_data = await this.readByte(2);
-                            data_size = this.getNumberFromData(data_size_data, true);
-                        }
-                        data = await this.readByte(data_size);
-                        isLoop = false;
+        if (this.isJpeg === undefined) {
+            this.isJpeg = false;
+            const jpeg_header_data = await this.readByte(2);
+            if (jpeg_header_data.length === 2) {
+                const jpeg_header = this.getNumberFromData(jpeg_header_data, true);
+                if (jpeg_header === JpegInfo.JPEG_HEADER) {
+                    this.isJpeg = true;
+                }
+            }
+        }
+        if (this.isJpeg) {
+            while (isLoop) {
+                const marker_header_data = await this.readByte(2);
+                if (marker_header_data.length === 0) break;
+                const marker_header = this.getNumberFromData(marker_header_data, true);
+                if (marker_header <= JpegInfo.RST7 && marker_header >= JpegInfo.RST1) {
+                    continue;
+                } else if (marker_header === JpegInfo.EOI) {
+                    break;
+                } else if (tag === marker_header) {
+                    isLoop = false;
+                    let data_size: number = 0;
+                    if (tag === JpegInfo.DRI) {
+                        data_size = 4;
                     } else {
-                        const skip_data = await this.readByte(2);
-                        const skip_size = this.getNumberFromData(skip_data, true);
-                        if (marker_header === JpegInfo.EXIF_HEADER) {
-                            this.exif_info = await this.readByte(skip_size - 2);
-                        } else if (marker_header === JpegInfo.SOF0 || marker_header === JpegInfo.SOF2) {
-                            this.size_info = await this.readByte(skip_size - 2);
-                        } else {
-                            this.offset += skip_size -2;
-                        }
+                        const data_size_data = await this.readByte(2);
+                        data_size = this.getNumberFromData(data_size_data, true);
+                    }
+                    // because the marker size include two byte before
+                    data = await this.readByte(data_size - 2);
+                } else {
+                    const skip_data = await this.readByte(2);
+                    const skip_size = this.getNumberFromData(skip_data, true);
+                    if (marker_header === JpegInfo.EXIF_HEADER) {
+                        this.exif_info = await this.readByte(skip_size - 2);
+                    } else if (marker_header === JpegInfo.SOF0 || marker_header === JpegInfo.SOF2) {
+                        this.size_info = await this.readByte(skip_size - 2);
+                    } else {
+                        this.o_offset = skip_size - 2;
                     }
                 }
             }
@@ -177,10 +200,10 @@ class JpegInfo {
         return data;
     }
 
-    private getNumberFromData(data: Uint8Array, isBigEnd: boolean = true) {
+    private getNumberFromData(data: Uint8Array, isLitterEndian: boolean = true) {
         const size = data.length;
         let res: number = 0;
-        if (isBigEnd) {
+        if (isLitterEndian) {
             for (let i = 0; i < size; i++) {
                 res = (res << 8) | data[i];
             }
@@ -199,18 +222,17 @@ class JpegInfo {
             height: 0,
         }
         if (!this.size_info) {
-            this.initReader();
             try {
                 this.size_info = await this.JpegMarkerReader(JpegInfo.SOF0);
                 if (this.size_info.length === 0) {
                     this.size_info = await this.JpegMarkerReader(JpegInfo.SOF2);
                 }
             } catch(e) {
-                //
+                console.log("get size error:");
             } 
         }
 
-        if (this.size_info.length > 0) {
+        if (this.size_info && this.size_info.length > 0) {
             imageSize.height = this.size_info[1] << 8 | this.size_info[2];
             imageSize.width = this.size_info[3] << 8 | this.size_info[4];
         }
@@ -218,15 +240,12 @@ class JpegInfo {
         return imageSize;
     }
 
-    private initReader() {
+    public initWithBuffer(data: ArrayBuffer) {
         this.offset = 0;
-        this.buf_size = 0;
         this.READED_BYTE = 0;
+        this.buffer = data;
+        this.totalSize = data.byteLength;
+        this.buf_size = data.byteLength;
+        this.o_offset = 0;
     }
-
-
 }
-
-
-
-export default JpegInfo

@@ -1,21 +1,18 @@
 import JpegEncode from "../JpegEncode"
-import { resolve } from "url";
+import JpegInfo, { CGSize } from "../util/jpeg_info"
 const maxSize = 1024 * 150;
 const maxLong = 1920;
 const maxShort = 1080;
-
-interface CGSize {
-    width: number;
-    height: number;
-}
 
 export default class ImageSender {
     public static inst: ImageSender;
     private jpegEncode: JpegEncode;
     private constructor() {
+        /*
         JpegEncode.getInstance().then((inst: JpegEncode | null) => {
             if (inst) this.jpegEncode = inst;
         }).catch((err) => console.log(err));
+        */
     }
 
     public static getInstance() {
@@ -92,7 +89,7 @@ export default class ImageSender {
         }
     }
 
-    private getOriginalData (image: HTMLImageElement, size: CGSize): ImageData | void {
+    private getOriginalData (image: HTMLImageElement, size: CGSize): Promise<ArrayBuffer> {
         const {width: ow, height: oh } = image;
         const {width: w, height: h} = size;
         const cvs = document.createElement("canvas");
@@ -103,8 +100,44 @@ export default class ImageSender {
             cvs.width = w;
             cvs.height = h; 
             ctx.drawImage(image, 0, 0, ow, oh, 0, 0, w, h);
-            return ctx.getImageData(0, 0, w, h);
+            return new Promise((resolve, reject) => {
+                cvs.toBlob((data: Blob) => {
+                    if (data) {
+                        const fileReader = new FileReader();
+                        fileReader.onload = function(e: any) {
+                            resolve(e.target.result);
+                        }
+                        fileReader.onerror = function(e: any) {
+                            reject(e);
+                        }
+                        fileReader.readAsArrayBuffer(data);
+                    } else {
+                        reject("get blob failed");
+                    }
+                }, "image/jpeg", 0.75);
+            });
         }
+
+        return Promise.reject("No ctx");
+    }
+
+    private InsertExif(orien: number, jpeg: ArrayBuffer) {
+        const exif = `FF D8 FF E1 00 22 45 78 69 66 00 00 49 49 2A 00 08 00 00 00 01 00 12 01 03 00 01 00 00 00 ${orien} 00 00 00 00 00 00 00`;
+        const exif_arr = exif.split(" ");
+        const exif_buf = new ArrayBuffer(38);
+        const int8v = new Uint8Array(exif_buf);
+        for (let i = 0; i < int8v.length; i++) {
+            int8v[i] = parseInt(exif_arr[i], 16);
+        }
+        console.log("compress exif", int8v);
+        const jpeg_data = new Uint8Array(jpeg, 1);
+
+        const jpegWithExif = new Uint8Array([
+            ...int8v,
+            ...jpeg_data
+        ]);
+
+        return jpegWithExif.buffer;
     }
 
 
@@ -113,13 +146,17 @@ export default class ImageSender {
         const type = file.type;
         try {
             const imageData = await this.readFile(file);
+            const jj = new JpegInfo();
+            jj.initWithBuffer(imageData);
+            const orien = await jj.get_orientation();
+            console.log(orien);
             if (type.indexOf("jp") !== -1 && size < maxSize) return imageData;
             const image = await this.getImage(imageData, type);
             const dimission = this.getDimssion(image);
-            const rgbData = this.getOriginalData(image, dimission);
-            if (rgbData && this.jpegEncode) {
-                return this.jpegEncode.encodeJpg(rgbData);
-            }
+            const rgbData = await this.getOriginalData(image, dimission);
+            const jpegWithExif = this.InsertExif(orien, rgbData);
+
+            return jpegWithExif;
         } catch(err) {
             //
         }
