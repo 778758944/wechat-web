@@ -16,7 +16,6 @@ import WeChatNotify from "../notification"
 import ImageSender from "../ImageSender"
 import Peer from "../network/Peer"
 import FileManager from "../network/FileManager"
-import JpegInfo, { CGSize } from "../util/jpeg_info"
 
 interface IParam {
     id: string;

@@ -1,6 +1,7 @@
 import * as React from "react"
 import ColorQuantizer from "../../../ColorQuantizer"
 import toast from "antd-mobile/es/toast"
+import JpegInfo, { CGSize } from "../../../util/jpeg_info"
 import "antd-mobile/es/toast/style/index.css"
 import "./index.less"
 
@@ -12,9 +13,11 @@ interface IState {
     fullImageStyle: any;
 }
 
-interface ImageSize {
+interface CGRect {
     width: number;
     height: number;
+    top: number;
+    left: number;
 }
 
 export default class AudioMsg extends React.Component<IProps, IState> {
@@ -36,11 +39,13 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private fullStyle: string = "translate(0px, 0px) scale(1, 1)";
     private disappearTimer: any;
     private imageUrl: string;
+    private JpegReader: JpegInfo;
+    private showImageEl: HTMLImageElement; 
+    private rotateAngel: number;
     constructor(props: IProps) {
         super(props);
         this.isFull = false;
         this.handleImageClick = this.handleImageClick.bind(this);
-        this.handleImageOnLoad = this.handleImageOnLoad.bind(this);
         this.chatWrap = document.querySelector(".chat-msg-area");
         this.state = {
             fullImageStyle: null
@@ -51,13 +56,20 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         const imageBlob = new Blob([imageData], {type: "image/jpeg"});
         this.imageUrl = window.URL.createObjectURL(imageBlob);
 
+        // initial JpegReader
+        this.JpegReader = new JpegInfo();
+
         if (document.documentElement) {
             this.screenHeight = document.documentElement.clientHeight;
             this.screenWidth = document.documentElement.clientWidth;
         }
     }
 
-    private getImageSize(image: HTMLImageElement): ImageSize {
+    public componentDidMount() {
+        this.handleGetImageInfo().catch(() => {});
+    }
+
+    private getImageSize(image: CGSize): CGSize {
         let width: number = 0;
         let height: number = 0;
         if (this.screenWidth) {
@@ -89,8 +101,26 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         }
     }
 
-    private setFullImageStyle(image: HTMLImageElement) {
-        let fullImageStyle = null;
+    private getImageRotation(orien: number) {
+        switch (orien) {
+            case 8:
+                return -90;
+            case 3:
+                return 180;
+            case 6:
+                return 90;
+            default:
+                return 0;
+        }
+    }
+
+    private getFullImageStyle(image: CGSize): CGRect {
+        let fullImageStyle: CGRect = {
+            width: 0,
+            height: 0,
+            top: 0,
+            left: 0
+        };
         if (this.screenWidth) {
             const screenWidth = this.screenWidth;
             const screenHeight = this.screenHeight;
@@ -113,27 +143,70 @@ export default class AudioMsg extends React.Component<IProps, IState> {
             }
 
             fullImageStyle = {
-                width: this.imageWidth + "px",
-                height: this.imageHeight + "px",
-                top: this.imagePosy + "px",
-                left: this.imagePosx + "px",
+                width: this.imageWidth,
+                height: this.imageHeight,
+                top: this.imagePosy,
+                left: this.imagePosx,
             }
-
-            this.setState({
-                fullImageStyle
-            });
         }
+
+        return fullImageStyle;
         
     }
 
-    private handleImageOnLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-        const size = this.getImageSize(e.currentTarget);
-        this.imageWrap.style.width = size.width + 'px';
-        this.imageWrap.style.height = size.height + 'px';
-        this.imageWrap.style.display = "block";
+    private getInitialImageStyle(angel: number, size: CGSize) {
+        let transformStyle = `rotateZ(${angel}deg) scale(1)`;
+        if (angel === 90) {
+            transformStyle += ` translateY(-${size.height}px)`;
+        } else if (angel === -90) {
+            transformStyle += ` translateX(-${size.width}px)`;
+        } else if (angel === 180) {
+            transformStyle += ` translate(-${size.width}px, -${size.height}px)`;
+        }
 
-        this.setFullImageStyle(e.currentTarget);
-        this.imageEle = e.currentTarget;
+        return transformStyle;
+    }
+
+    private getFullImageTransformStyle(fullStyle: CGRect, scale: number, top: number, left: number) {
+        let transformStyle = `rotateZ(${this.rotateAngel}deg) scale(${scale})`;
+        if (this.rotateAngel === 90) {
+            const posx = fullStyle.left + fullStyle.width;
+            transformStyle += ` translate(${(fullStyle.top - top)/scale}px, -${(posx - left)/scale}px)`;
+        } else if (this.rotateAngel === -90) {
+            const posy = fullStyle.top + fullStyle.height;
+            transformStyle += ` translate(-${(posy - top)/scale}px, ${((fullStyle.left - left)/scale)}px)`;
+        } else if (this.rotateAngel === 180) {
+            const posx = fullStyle.left + fullStyle.width;
+            const posy = fullStyle.top + fullStyle.height;
+            transformStyle += ` translate(-${(posx - left)/scale}px, -${(posy - top)/scale}px)`;
+        } else {
+            transformStyle += ` translate(${(fullStyle.left - left)/scale}px, ${(fullStyle.top - top)/scale}px)`;
+        }
+
+        return transformStyle;
+    }
+
+
+    private async handleGetImageInfo() {
+        const { imageData } = this.props;
+        this.JpegReader.initWithBuffer(imageData);
+        const orien = await this.JpegReader.get_orientation();
+        const size = await this.JpegReader.get_image_size();
+        const imageSize = this.getImageSize(size);
+        const rotateDeg = this.getImageRotation(orien);
+        this.rotateAngel = rotateDeg;
+
+        if (rotateDeg === 90 || rotateDeg === -90) {
+            this.imageWrap.style.width = imageSize.height + 'px';
+            this.imageWrap.style.height = imageSize.width + 'px';
+        } else {
+            this.imageWrap.style.width = imageSize.width + 'px';
+            this.imageWrap.style.height = imageSize.height + 'px';
+        }
+        this.imageWrap.style.display = "block";
+        this.showImageEl.style.width = imageSize.width + "px";
+        this.showImageEl.style.height = imageSize.height + "px";
+        this.showImageEl.style.transform = this.getInitialImageStyle(rotateDeg, imageSize);
     }
 
     private showFullImage() {
@@ -141,33 +214,44 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         this.fullEle.style.backgroundColor = themeColor;
         this.fullEle.style.pointerEvents = "all";
         this.fullEle.style.display = "block";
-        const { left, top } = this.imageWrap.getBoundingClientRect();
-        this.thumbStyle = `translate(${left - this.imagePosx}px, ${top - this.imagePosy}px) scale(${this.thumbWidth/this.imageWidth}, ${this.thumbHeight/this.imageHeight})`;
-        this.imageEle.style.transform = this.thumbStyle;
-        this.imageEle.style.display = "block";
-        this.imageWrap.style.visibility = "hidden";
         this.imageWrap.style.pointerEvents = "none";
+        const { width, height, left, top } = this.imageWrap.getBoundingClientRect();
+        const rsize: CGSize = {
+            width,
+            height,
+        }
+        const fullStyle = this.getFullImageStyle(rsize);
+        const scale = fullStyle.width/width;
+        this.showImageEl.style.position = "fixed";
+        this.showImageEl.style.transform = this.getFullImageTransformStyle(fullStyle, scale, top, left);
         // fix ios overflow bugger
         if (this.chatWrap) this.chatWrap.style.overflowY = "visible";
         if (this.disappearTimer) clearTimeout(this.disappearTimer);
-        setTimeout(() => {
-            this.imageEle.classList.add("image-view-img-ani");
-            this.imageEle.style.transform = "translate(0, 0) scale(1, 1)";
-            this.fullEle.style.opacity = "1";
-        }, 0);
+        this.fullEle.style.opacity = "1";
     }
 
     private hideFullImage() {
         this.fullEle.style.opacity = "0";
         this.fullEle.style.pointerEvents = "none";
-        this.imageEle.style.transform = this.thumbStyle;
         // fix ios overflow bugger
+        const { width, height } = this.imageWrap.getBoundingClientRect();
+        let size: CGSize;
+        if (this.rotateAngel === 90 || this.rotateAngel === -90) {
+            size = {
+                width: height,
+                height: width
+            };
+        } else {
+            size = {
+                width,
+                height
+            }
+        }
+        this.showImageEl.style.transform = this.getInitialImageStyle(this.rotateAngel, size);
         if (this.chatWrap) this.chatWrap.style.overflowY = "scroll";
         this.disappearTimer = setTimeout(() => {
-            this.imageEle.classList.remove("image-view-img-ani");
-            this.imageEle.style.display = "none";
             this.fullEle.style.display = "none";
-            this.imageWrap.style.visibility = "visible";
+            this.showImageEl.style.position = "static";
             this.imageWrap.style.pointerEvents = "all";
         }, 200);
     }
@@ -199,9 +283,14 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                 <div className="image-view-wrap"  ref={(e) => {
                     if (e) {
                         this.imageWrap = e;
-                        this.imageWrap.style.backgroundImage = `url(${this.imageUrl})`;
+                        // this.imageWrap.style.backgroundImage = `url(${this.imageUrl})`;
                     }
                 }} onClick={this.handleImageClick}>
+                    <img className="show-image-view" src={this.imageUrl} ref={(e) => {
+                        if (e) {
+                            this.showImageEl = e;
+                        }
+                    }}/>
                 </div>
                 <div ref={(e) => {
                     if (e) {
@@ -210,7 +299,6 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                     }
                 }} className="image-view-wrap-full" onClick={this.handleImageClick}>
                 </div>
-                <img style={fullImageStyle} className="image-view-img-full" src={this.imageUrl} onLoad={this.handleImageOnLoad}/>
             </div>
         )
     }

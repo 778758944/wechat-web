@@ -5,7 +5,7 @@ export interface CGSize {
 export default class JpegInfo {
     private static JPEG_HEADER = parseInt("FFD8", 16);
     private static RST1 = parseInt("FFD0", 16);
-    private static RST7 = parseInt("RST7", 16);
+    private static RST7 = parseInt("FFD7", 16);
     private static EOI = parseInt("FFD9", 16);
     private static DRI = parseInt("FFDD", 16);
     private static SOF0 = parseInt("FFC0", 16);
@@ -105,6 +105,7 @@ export default class JpegInfo {
     private async readByte(size: number): Promise<Uint8Array> {
         let data: Uint8Array;
         this.offset += this.o_offset;
+        this.READED_BYTE += this.o_offset;
         if (this.buf_size < size + this.offset) {
             const fileSize = this.totalSize;
             let start: number, end: number;

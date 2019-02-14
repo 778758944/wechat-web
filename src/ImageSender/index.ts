@@ -124,13 +124,13 @@ export default class ImageSender {
     private InsertExif(orien: number, jpeg: ArrayBuffer) {
         const exif = `FF D8 FF E1 00 22 45 78 69 66 00 00 49 49 2A 00 08 00 00 00 01 00 12 01 03 00 01 00 00 00 ${orien} 00 00 00 00 00 00 00`;
         const exif_arr = exif.split(" ");
-        const exif_buf = new ArrayBuffer(38);
+        const exif_buf = new ArrayBuffer(exif_arr.length);
         const int8v = new Uint8Array(exif_buf);
         for (let i = 0; i < int8v.length; i++) {
             int8v[i] = parseInt(exif_arr[i], 16);
         }
         console.log("compress exif", int8v);
-        const jpeg_data = new Uint8Array(jpeg, 1);
+        const jpeg_data = new Uint8Array(jpeg, 2);
 
         const jpegWithExif = new Uint8Array([
             ...int8v,
@@ -149,7 +149,6 @@ export default class ImageSender {
             const jj = new JpegInfo();
             jj.initWithBuffer(imageData);
             const orien = await jj.get_orientation();
-            console.log(orien);
             if (type.indexOf("jp") !== -1 && size < maxSize) return imageData;
             const image = await this.getImage(imageData, type);
             const dimission = this.getDimssion(image);
