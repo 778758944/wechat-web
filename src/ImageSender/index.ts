@@ -1,6 +1,6 @@
 import JpegEncode from "../JpegEncode"
 import JpegInfo, { CGSize } from "../util/jpeg_info"
-const maxSize = 1024 * 150;
+const maxSize = 1024 * 200;
 const maxLong = 1920;
 const maxShort = 1080;
 
@@ -8,11 +8,7 @@ export default class ImageSender {
     public static inst: ImageSender;
     private jpegEncode: JpegEncode;
     private constructor() {
-        /*
-        JpegEncode.getInstance().then((inst: JpegEncode | null) => {
-            if (inst) this.jpegEncode = inst;
-        }).catch((err) => console.log(err));
-        */
+        
     }
 
     public static getInstance() {
@@ -101,20 +97,20 @@ export default class ImageSender {
             cvs.height = h; 
             ctx.drawImage(image, 0, 0, ow, oh, 0, 0, w, h);
             return new Promise((resolve, reject) => {
-                cvs.toBlob((data: Blob) => {
-                    if (data) {
-                        const fileReader = new FileReader();
-                        fileReader.onload = function(e: any) {
-                            resolve(e.target.result);
+                    cvs.toBlob((data: Blob) => {
+                        if (data) {
+                            const fileReader = new FileReader();
+                            fileReader.onload = function(e: any) {
+                                resolve(e.target.result);
+                            }
+                            fileReader.onerror = function(e: any) {
+                                reject(e);
+                            }
+                            fileReader.readAsArrayBuffer(data);
+                        } else {
+                            reject("get blob failed");
                         }
-                        fileReader.onerror = function(e: any) {
-                            reject(e);
-                        }
-                        fileReader.readAsArrayBuffer(data);
-                    } else {
-                        reject("get blob failed");
-                    }
-                }, "image/jpeg", 0.75);
+                    }, "image/jpeg", 0.75);
             });
         }
 
@@ -140,22 +136,35 @@ export default class ImageSender {
         return jpegWithExif.buffer;
     }
 
+    private isPng(type: string) {
+        return type.indexOf("png") !== -1
+    }
+
 
     public async getSendData(file: File): Promise<ArrayBuffer | void> {
-        const size = file.size;
-        const type = file.type;
+        const { size, type } = file;
         try {
             const imageData = await this.readFile(file);
             const jj = new JpegInfo();
             jj.initWithBuffer(imageData);
             const orien = await jj.get_orientation();
-            if (type.indexOf("jp") !== -1 && size < maxSize) return imageData;
-            const image = await this.getImage(imageData, type);
-            const dimission = this.getDimssion(image);
-            const rgbData = await this.getOriginalData(image, dimission);
-            const jpegWithExif = this.InsertExif(orien, rgbData);
-
-            return jpegWithExif;
+            if (type.indexOf("gif") !== -1) {
+                return imageData;
+            } else {
+                if (size < maxSize) return imageData;
+                const image = await this.getImage(imageData, type);
+                const dimission = this.getDimssion(image);
+                const rgbData = await this.getOriginalData(image, dimission);
+                if (this.isPng(type)) {
+                    return rgbData;
+                } else {
+                    const jpegInfo = new JpegInfo();
+                    jpegInfo.initWithBuffer(imageData);
+                    const orien = await jpegInfo.get_orientation();
+                    const jpegWithExif = this.InsertExif(orien, rgbData);
+                    return jpegWithExif;
+                }
+            }
         } catch(err) {
             //
         }

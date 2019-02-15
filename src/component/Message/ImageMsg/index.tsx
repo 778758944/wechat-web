@@ -24,19 +24,14 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private cq: ColorQuantizer;
     private imageWrap: HTMLDivElement;
     private isFull: boolean;
-    private imageEle: HTMLImageElement;
     private fullEle: HTMLDivElement;
     private chatWrap: HTMLDivElement | null;
-    private thumbWidth: number;
-    private thumbHeight: number;
     private screenWidth: number;
     private screenHeight: number;
     private imageWidth: number;
     private imageHeight: number;
     private imagePosx: number;
     private imagePosy: number;
-    private thumbStyle: string;
-    private fullStyle: string = "translate(0px, 0px) scale(1, 1)";
     private disappearTimer: any;
     private imageUrl: string;
     private JpegReader: JpegInfo;
@@ -46,6 +41,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         super(props);
         this.isFull = false;
         this.handleImageClick = this.handleImageClick.bind(this);
+        this.handleGetImageInfo = this.handleGetImageInfo.bind(this);
         this.chatWrap = document.querySelector(".chat-msg-area");
         this.state = {
             fullImageStyle: null
@@ -63,10 +59,6 @@ export default class AudioMsg extends React.Component<IProps, IState> {
             this.screenHeight = document.documentElement.clientHeight;
             this.screenWidth = document.documentElement.clientWidth;
         }
-    }
-
-    public componentDidMount() {
-        this.handleGetImageInfo().catch(() => {});
     }
 
     private getImageSize(image: CGSize): CGSize {
@@ -93,8 +85,6 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                 }
             }
         }
-        this.thumbWidth = width;
-        this.thumbHeight = height;
         return {
             width,
             height,
@@ -187,11 +177,15 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     }
 
 
-    private async handleGetImageInfo() {
+    private async handleGetImageInfo(e: React.SyntheticEvent<HTMLImageElement>) {
+        const image = e.currentTarget;
         const { imageData } = this.props;
         this.JpegReader.initWithBuffer(imageData);
         const orien = await this.JpegReader.get_orientation();
-        const size = await this.JpegReader.get_image_size();
+        const size = {
+            width: image.width,
+            height: image.height
+        }
         const imageSize = this.getImageSize(size);
         const rotateDeg = this.getImageRotation(orien);
         this.rotateAngel = rotateDeg;
@@ -223,6 +217,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         const fullStyle = this.getFullImageStyle(rsize);
         const scale = fullStyle.width/width;
         this.showImageEl.style.position = "fixed";
+        this.showImageEl.style.top = top + "px";
         this.showImageEl.style.transform = this.getFullImageTransformStyle(fullStyle, scale, top, left);
         // fix ios overflow bugger
         if (this.chatWrap) this.chatWrap.style.overflowY = "visible";
@@ -253,6 +248,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
             this.fullEle.style.display = "none";
             this.showImageEl.style.position = "static";
             this.imageWrap.style.pointerEvents = "all";
+            this.showImageEl.style.top = "0px";
         }, 200);
     }
 
@@ -276,21 +272,18 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     }
 
     render() {
-        const { imageData } = this.props;
-        const { fullImageStyle } = this.state;
         return (
             <div>
                 <div className="image-view-wrap"  ref={(e) => {
                     if (e) {
                         this.imageWrap = e;
-                        // this.imageWrap.style.backgroundImage = `url(${this.imageUrl})`;
                     }
                 }} onClick={this.handleImageClick}>
                     <img className="show-image-view" src={this.imageUrl} ref={(e) => {
                         if (e) {
                             this.showImageEl = e;
                         }
-                    }}/>
+                    }} onLoad={this.handleGetImageInfo}/>
                 </div>
                 <div ref={(e) => {
                     if (e) {

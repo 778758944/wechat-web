@@ -84,12 +84,12 @@ export default class JpegInfo {
         }
 
         if (this.exif_info && this.exif_info.length > 0) {
-            console.log("exif", this.exif_info);
+            // console.log("exif", this.exif_info);
             const orien_data = this.exifDiretoryReader(JpegInfo.EXIF_DIRE_ORIEN);
-            console.log('orientation', orien_data);
+            // console.log('orientation', orien_data);
             if (orien_data.length > 0) {
                 let offset = 4;
-                console.log(this.getNumberFromData(orien_data.subarray(2, 4), this.is_exif_bigger_endian));
+                // console.log(this.getNumberFromData(orien_data.subarray(2, 4), this.is_exif_bigger_endian));
                 const num_of_component = this.getNumberFromData(orien_data.subarray(offset, offset + 4), this.is_exif_bigger_endian);
                 offset += 4;
                 if (num_of_component === 1) {
@@ -229,7 +229,7 @@ export default class JpegInfo {
                     this.size_info = await this.JpegMarkerReader(JpegInfo.SOF2);
                 }
             } catch(e) {
-                console.log("get size error:");
+                console.error("get size error:");
             } 
         }
 
