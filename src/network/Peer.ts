@@ -125,11 +125,13 @@ class Peer {
        let listeners: CallBack[] | undefined;
        if (state === "connected" || state === "completed") {
             if (!this.isConnected) {
+                console.log("Peer connected");
                 this.isConnected = true;
                 listeners = this.listener.get("connect");
             }
        } else {
             if (this.isConnected) {
+                console.log("Peer disconnected");
                 this.isConnected = false;
                 listeners = this.listener.get("disconnect");
             }
