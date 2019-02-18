@@ -1,5 +1,5 @@
 export const SignalType = "signalingMsg"
-export type StringMsg = "bye" | "voice";
+export type StringMsg = "bye" | "voice" | "denyFile";
 export type DataType = RTCSessionDescriptionInit | RTCIceCandidateInit | StringMsg;
 export type CallType = "video_call" | "file_translate";
 

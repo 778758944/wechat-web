@@ -7,7 +7,7 @@ interface ISignalCallback {
     (msg: ISignalMsg): void;
 }
 
-export type ISignalEventType = "bye" | "offer" | "candidate" | "answer" | "switchvoice";
+export type ISignalEventType = "bye" | "offer" | "candidate" | "answer" | "switchvoice" | "denyFile";
 
 export default class SocketConnection {
     private static inst: SocketConnection;
@@ -31,7 +31,7 @@ export default class SocketConnection {
 
     private initAfter() {
         this.socket.on("connect", () => {
-            console.log("connect");
+            console.log("socket connect");
             this.isConnected = true;
         });
 
@@ -67,6 +67,8 @@ export default class SocketConnection {
                     this.emitSignalEvent("bye", signalMsg);
                 } else if (data === "voice") {
                     this.emitSignalEvent("switchvoice", signalMsg);
+                } else if (data === "denyFile") {
+                    this.emitSignalEvent("denyFile", signalMsg);
                 }
             } else {
                 if (data.type === "offer") {

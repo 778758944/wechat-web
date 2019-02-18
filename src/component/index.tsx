@@ -50,6 +50,13 @@ class Home extends React.Component<IProps, {}> {
         this.socket = SocketConnection.getInstance(socketUrl);
         this.handleOfferMsg = this.handleOfferMsg.bind(this);
         this.socket.subscribeSignal("offer", this.handleOfferMsg);
+        this.socket.subscribeSignal("denyFile", this.handleFileDeny);
+    }
+
+    private handleFileDeny(msg: ISignalMsg) {
+        const { from, to } = msg;
+        const fileReceiver = FileManager.getInstance(from, to);
+        fileReceiver.handleReject();
     }
 
     private handleCallReceive(msg: ISignalMsg) {
@@ -59,9 +66,7 @@ class Home extends React.Component<IProps, {}> {
     }
 
     private handleFileSend(msg: ISignalMsg) {
-        const { type } = msg;
         const { from, to } = msg;
-        // this.peer = new Peer(f)
         const fileReceiver = FileManager.getInstance(from, to);
         fileReceiver.receiveFile();
     }

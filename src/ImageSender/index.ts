@@ -6,7 +6,6 @@ const maxShort = 1080;
 
 export default class ImageSender {
     public static inst: ImageSender;
-    private jpegEncode: JpegEncode;
     private constructor() {
         
     }

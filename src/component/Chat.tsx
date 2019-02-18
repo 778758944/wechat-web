@@ -286,7 +286,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
         const file: File = e.target.files[0];
         const { name, size, type } = file;
         const { currentFriend, currentUser } = this.props;
-        if (name && size && type) {
+        if (name && size) {
             const msg_data = JSON.stringify({name, size, type});
             this.sendMsg(MsgContentType.file, msg_data);
             const fileSender = FileManager.getInstance(currentFriend.id, currentUser.id);
