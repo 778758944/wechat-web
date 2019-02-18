@@ -45,3 +45,7 @@ export function disableOverBounce(el: HTMLElement) {
         evt._isScroller = true
     }, {passive: true});
   }
+
+  export function isIos() {
+    
+  }
