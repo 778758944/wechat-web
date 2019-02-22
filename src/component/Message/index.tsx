@@ -32,7 +32,7 @@ export default class MessageView extends React.Component<IProps, {}> {
                 return <AudioMsg />;
 
             case MsgContentType.file:
-                return <FileMsg fileinfo={msg.msg} />
+                return <FileMsg fileinfo={msg.msg} to={msg.to} from={msg.from} isMyself={isMyself}/>
         }
     }
     render() {

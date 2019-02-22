@@ -47,5 +47,7 @@ export function disableOverBounce(el: HTMLElement) {
   }
 
   export function isIos() {
-    
+    const regexp = /iPhone/;
+    const { userAgent } = navigator;
+    return regexp.test(userAgent);
   }

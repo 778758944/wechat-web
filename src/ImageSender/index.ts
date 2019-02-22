@@ -1,4 +1,4 @@
-import JpegEncode from "../JpegEncode"
+import { isIos } from "../util"
 import JpegInfo, { CGSize } from "../util/jpeg_info"
 const maxSize = 1024 * 200;
 const maxLong = 1920;
@@ -158,8 +158,14 @@ export default class ImageSender {
                     return rgbData;
                 } else {
                     const jpegInfo = new JpegInfo();
-                    jpegInfo.initWithBuffer(imageData);
-                    const orien = await jpegInfo.get_orientation();
+                    let orien;
+                    if (isIos()) {
+                        orien = 1;
+                    } else {
+                        jpegInfo.initWithBuffer(imageData);
+                        orien = await jpegInfo.get_orientation();
+                    }
+                    
                     const jpegWithExif = this.InsertExif(orien, rgbData);
                     return jpegWithExif;
                 }

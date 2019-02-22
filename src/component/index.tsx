@@ -51,6 +51,9 @@ class Home extends React.Component<IProps, {}> {
         this.handleOfferMsg = this.handleOfferMsg.bind(this);
         this.socket.subscribeSignal("offer", this.handleOfferMsg);
         this.socket.subscribeSignal("denyFile", this.handleFileDeny);
+        window.addEventListener("beforeunload", (e: any) => {
+            // e.returnValue = "File is transiting, Are you sure you want to quit";
+        });
     }
 
     private handleFileDeny(msg: ISignalMsg) {
