@@ -1,4 +1,3 @@
-import { isIos } from "../util"
 import JpegInfo, { CGSize } from "../util/jpeg_info"
 const maxSize = 1024 * 200;
 const maxLong = 1920;
@@ -118,6 +117,7 @@ export default class ImageSender {
 
     private InsertExif(orien: number, jpeg: ArrayBuffer) {
         const exif = `FF D8 FF E1 00 22 45 78 69 66 00 00 49 49 2A 00 08 00 00 00 01 00 12 01 03 00 01 00 00 00 ${orien} 00 00 00 00 00 00 00`;
+        console.log("exif", exif);
         const exif_arr = exif.split(" ");
         const exif_buf = new ArrayBuffer(exif_arr.length);
         const int8v = new Uint8Array(exif_buf);
@@ -158,14 +158,9 @@ export default class ImageSender {
                     return rgbData;
                 } else {
                     const jpegInfo = new JpegInfo();
-                    let orien;
-                    if (isIos()) {
-                        orien = 1;
-                    } else {
-                        jpegInfo.initWithBuffer(imageData);
-                        orien = await jpegInfo.get_orientation();
-                    }
-                    
+                    jpegInfo.initWithBuffer(imageData);
+                    const orien = await jpegInfo.get_orientation();
+                    console.log("orien: ", orien);
                     const jpegWithExif = this.InsertExif(orien, rgbData);
                     return jpegWithExif;
                 }

@@ -50,6 +50,8 @@ export default class JpegInfo {
             // whether it is bigger Endian
             if (byte_order_str === "II") {
                 this.is_exif_bigger_endian = false;
+            } else {
+                this.is_exif_bigger_endian = true;
             }
 
             // get ifd0 offset relative to byte_order_str(4 byte)
@@ -86,6 +88,8 @@ export default class JpegInfo {
         if (this.exif_info && this.exif_info.length > 0) {
             // console.log("exif", this.exif_info);
             const orien_data = this.exifDiretoryReader(JpegInfo.EXIF_DIRE_ORIEN);
+            // debugger;
+            // console.log("orien_data", orien_data);
             // console.log('orientation', orien_data);
             if (orien_data.length > 0) {
                 let offset = 4;

@@ -2,6 +2,7 @@ import * as React from "react"
 import ColorQuantizer from "../../../ColorQuantizer"
 import toast from "antd-mobile/es/toast"
 import JpegInfo, { CGSize } from "../../../util/jpeg_info"
+import { isIos } from "../../../util"
 import "antd-mobile/es/toast/style/index.css"
 import "./index.less"
 
@@ -37,8 +38,10 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     private JpegReader: JpegInfo;
     private showImageEl: HTMLImageElement; 
     private rotateAngel: number;
+    private isIos: boolean;
     constructor(props: IProps) {
         super(props);
+        this.isIos = isIos();
         this.isFull = false;
         this.handleImageClick = this.handleImageClick.bind(this);
         this.handleGetImageInfo = this.handleGetImageInfo.bind(this);
@@ -92,6 +95,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
     }
 
     private getImageRotation(orien: number) {
+        if (this.isIos) return 0;
         switch (orien) {
             case 8:
                 return -90;
