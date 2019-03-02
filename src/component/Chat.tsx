@@ -269,7 +269,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
         const image: File = e.target.files[0];
         const sendData: ArrayBuffer | void = await this.imageSender.getSendData(image);
         if (sendData) {
-            this.sendMsg(MsgContentType.image, sendData)
+            this.sendMsg(MsgContentType.image, sendData);
         };
 
 
@@ -291,14 +291,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
             this.sendMsg(MsgContentType.file, msg_data);
             const fileSender = FileManager.getInstance(currentFriend.id, currentUser.id);
             fileSender.sendFile(file);
-            /*
-            if (!this.peer) this.peer = new Peer(currentFriend.id, currentUser.id, this.socket);
-            this.peer.createChannel();
-            this.peer.createConnection("file_translate");
-            this.peer.on("connect", () => {
-                console.log("peer connect");
-            });
-            */
         }
     }
 
@@ -359,7 +351,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
                         })}
                     </div>
                 </div>
-                <input onChange={this.handleFileInputChange} className="chat-file-input" type="file" ref={this.getFileInput}/>
+                <input onChange={this.handleFileInputChange} className="chat-file-input" type="file" accept="image/jpeg,image/gif,image/png" ref={this.getFileInput}/>
                 <input onChange={this.handleSendFile} className="chat-file-input" type="file" ref={this.getSendFileInput}/>
             </div>
         )

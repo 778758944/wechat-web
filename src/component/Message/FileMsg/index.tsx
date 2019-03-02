@@ -1,5 +1,6 @@
 import * as React from "react"
 import FileManager, { FileSender } from "../../../network/FileManager"
+import Progress from "../../Progress"
 import Icon from "../../Icon"
 import "./index.less"
 
@@ -104,7 +105,7 @@ export default class FileMsg extends React.Component<IProps, IState> {
             case FileStatus.WAIT:
             case FileStatus.PROCESSING:
                 return (
-                    <progress className="file-progress" max={allSize} value={status === FileStatus.PROCESSING ? progress : undefined}></progress>
+                    <Progress max={allSize} value={status === FileStatus.PROCESSING ? progress : undefined}></Progress>
                 );
 
             case FileStatus.DONE:

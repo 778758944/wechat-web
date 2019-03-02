@@ -194,7 +194,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
         const rotateDeg = this.getImageRotation(orien);
         this.rotateAngel = rotateDeg;
 
-        if (rotateDeg === 90 || rotateDeg === -90) {
+        if (orien === 8 || orien === 6) {
             this.imageWrap.style.width = imageSize.height + 'px';
             this.imageWrap.style.height = imageSize.width + 'px';
         } else {
@@ -202,8 +202,13 @@ export default class AudioMsg extends React.Component<IProps, IState> {
             this.imageWrap.style.height = imageSize.height + 'px';
         }
         this.imageWrap.style.display = "block";
-        this.showImageEl.style.width = imageSize.width + "px";
-        this.showImageEl.style.height = imageSize.height + "px";
+        if (this.isIos && (orien === 8 || orien === 6)) {
+            this.showImageEl.style.width = imageSize.height + "px";
+            this.showImageEl.style.height = imageSize.width + "px";
+        } else {
+            this.showImageEl.style.width = imageSize.width + "px";
+            this.showImageEl.style.height = imageSize.height + "px";
+        }
         this.showImageEl.style.transform = this.getInitialImageStyle(rotateDeg, imageSize);
     }
 
@@ -292,7 +297,7 @@ export default class AudioMsg extends React.Component<IProps, IState> {
                 <div ref={(e) => {
                     if (e) {
                         this.fullEle = e;
-                        this.fullEle.style.transform = `scale(${this.screenWidth}, ${this.screenHeight})`;
+                        this.fullEle.style.transform = `scale(${screen.width}, ${screen.height})`;
                     }
                 }} className="image-view-wrap-full" onClick={this.handleImageClick}>
                 </div>

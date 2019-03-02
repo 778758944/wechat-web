@@ -144,9 +144,6 @@ export default class ImageSender {
         const { size, type } = file;
         try {
             const imageData = await this.readFile(file);
-            const jj = new JpegInfo();
-            jj.initWithBuffer(imageData);
-            const orien = await jj.get_orientation();
             if (type.indexOf("gif") !== -1) {
                 return imageData;
             } else {
@@ -160,7 +157,6 @@ export default class ImageSender {
                     const jpegInfo = new JpegInfo();
                     jpegInfo.initWithBuffer(imageData);
                     const orien = await jpegInfo.get_orientation();
-                    console.log("orien: ", orien);
                     const jpegWithExif = this.InsertExif(orien, rgbData);
                     return jpegWithExif;
                 }

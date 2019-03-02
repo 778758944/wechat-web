@@ -55,15 +55,15 @@ export default class JpegInfo {
             }
 
             // get ifd0 offset relative to byte_order_str(4 byte)
-            const ifd0_offset = this.getNumberFromData(exif_buf.subarray(10, 14), this.is_exif_bigger_endian) 
+            const ifd0_offset = this.getNumberFromData(exif_buf.subarray(10, 14)) 
             let exif_offset = ifd0_offset + 6;
             // get directory number in ifd0
-            const num_of_directory = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2), this.is_exif_bigger_endian);
+            const num_of_directory = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2));
             exif_offset += 2;
             
 
             for (let j = 0; j < num_of_directory; j++) {
-                const directory_header = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2), this.is_exif_bigger_endian);
+                const directory_header = this.getNumberFromData(exif_buf.subarray(exif_offset, exif_offset + 2));
                 if (directory_header === JpegInfo.EXIF_DIRE_ORIEN) {
                     data = exif_buf.subarray(exif_offset, exif_offset + 12);
                     break;
@@ -94,10 +94,10 @@ export default class JpegInfo {
             if (orien_data.length > 0) {
                 let offset = 4;
                 // console.log(this.getNumberFromData(orien_data.subarray(2, 4), this.is_exif_bigger_endian));
-                const num_of_component = this.getNumberFromData(orien_data.subarray(offset, offset + 4), this.is_exif_bigger_endian);
+                const num_of_component = this.getNumberFromData(orien_data.subarray(offset, offset + 4));
                 offset += 4;
                 if (num_of_component === 1) {
-                    orientation = this.getNumberFromData(orien_data.subarray(offset, offset + 4), this.is_exif_bigger_endian);
+                    orientation = this.getNumberFromData(orien_data.subarray(offset, offset + 2));
                 }
             }
         }
@@ -205,10 +205,10 @@ export default class JpegInfo {
         return data;
     }
 
-    private getNumberFromData(data: Uint8Array, isLitterEndian: boolean = true) {
+    private getNumberFromData(data: Uint8Array, bigger_endian?: boolean) {
         const size = data.length;
         let res: number = 0;
-        if (isLitterEndian) {
+        if (bigger_endian || this.is_exif_bigger_endian) {
             for (let i = 0; i < size; i++) {
                 res = (res << 8) | data[i];
             }

@@ -84,14 +84,11 @@ export default class WeChatNotify {
         if (this.isVibrateSupport) {
             navigator.vibrate(pattern);
             if (timeout) {
-                
                 this.timer = setInterval(() => {
                     navigator.vibrate(pattern);
                 }, timeout);
             }
         }
-
-
     }
 
     public playVideoNotice() {
@@ -109,7 +106,11 @@ export default class WeChatNotify {
             this.audioEle.pause();
         }
         if (this.timer) clearTimeout(this.timer);
-        if (this.isVibrateSupport) navigator.vibrate(0);
+        try {
+            if (this.isVibrateSupport) navigator.vibrate(0);
+        } catch(e) {
+            //
+        }
     }
 
     public playVideoDownNotify() {

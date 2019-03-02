@@ -1,0 +1,32 @@
+.progress-wrapper {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background-color: rgb(222, 222, 222);
+    overflow: hidden;
+}
+
+@keyframes waiting {
+    from {
+        background-position-x: 0px;
+    } 
+    to {
+        background-position-x: 424px;
+    }
+}
+
+.progress-waiting {
+    background-image: linear-gradient(to right, rgb(64, 139, 249), white, rgb(64, 139, 249));
+    background-position-x: 0px;
+    background-position-y: top;
+    background-size: cover;
+    animation: waiting linear 0.8s infinite;
+}
+
+
+.progress-inner {
+    width: 1px;
+    height: 100%;
+    transform-origin: top left;
+    background-color: rgb(64, 139, 249);
+}

@@ -32,13 +32,13 @@ class Navigator extends React.Component<IProps, IState> {
         this.goBack = this.goBack.bind(this);
         this.handleRouteChange = this.handleRouteChange.bind(this);
         this.getSwitchInst = this.getSwitchInst.bind(this);
+        const { history } = this.props;
+        history.listen(this.handleRouteChange);
     }
 
     public componentDidMount() {
-        const { history, location } = this.props;
-        history.listen(this.handleRouteChange);
-        this.routerStack.unshift(location.pathname);
-        if (location.pathname !== "/friend") {
+        const { location } = this.props;
+        if (location.pathname !== "/friend" && location.pathname !== "/") {
             this.setState({
                 isShowBack: true
             });
