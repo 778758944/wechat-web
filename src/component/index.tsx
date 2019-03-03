@@ -15,6 +15,8 @@ import { socketUrl } from "../network"
 import { ISignalMsg } from "../network/Signal"
 import Peer from "../network/Peer"
 import FileManager from "../network/FileManager"
+import toast from "antd-mobile/es/toast"
+import "antd-mobile/es/toast/style/index.css"
 
 
 interface IProps extends RouteComponentProps {
@@ -64,8 +66,14 @@ class Home extends React.Component<IProps, {}> {
 
     private handleCallReceive(msg: ISignalMsg) {
         const { from } = msg;
-        const { history } = this.props;
-        history.push(`/video/${from}/0`); 
+        const { history, location } = this.props;
+        const path = `/video/${from}/0`;
+        if (path === location.pathname) return;
+        if (location.pathname.indexOf("video")) {
+            toast.fail("Sorry, the opponent is in another video call now");
+        } else {
+            history.push(path);
+        }
     }
 
     private handleFileSend(msg: ISignalMsg) {

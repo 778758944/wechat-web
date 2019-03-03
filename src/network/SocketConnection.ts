@@ -1,6 +1,5 @@
 import { IMessage } from "../store"
 import { ISignalMsg, SignalType, isRTCIceCandidate, videoOffer, receiveCandidate, isDataString } from "./Signal"
-import { Socket } from "dgram";
 var io = require("socket.io-client");
 
 interface ISignalCallback {

@@ -44,6 +44,8 @@ class VideoCall extends React.Component<IProps, IVideoState> {
     private remoteVideoStream: MediaStream;
     private remoteAudioStream: MediaStream;
     private notify: WeChatNotify;
+    private cameraId: string | undefined;
+    private cameras: MediaDeviceInfo[] = [];
 
     constructor(props: IProps) {
         super(props);
@@ -64,6 +66,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         this.handleRemoteTrack = this.handleRemoteTrack.bind(this);
         this.cutVideoStream = this.cutVideoStream.bind(this);
         this.handleSwitchVoice = this.handleSwitchVoice.bind(this);
+        this.handleSwitchCamera = this.handleSwitchCamera.bind(this);
     }
 
     componentDidUpdate(prevProps: IProps) {
@@ -88,6 +91,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         this.notify = WeChatNotify.getInstance();
         this.notify.playVideoNotice();
         currentFriend.id && this.getMedia();
+        this.getDevices();
     }
 
     componentWillUnmount() {
@@ -101,6 +105,17 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         if (this.socket) {
             this.socket.unSubscribeSignal("bye", this.receiveHangdownMsg);
             this.socket.unSubscribeSignal("switchvoice", this.receiveVoiceSwitch);
+        }
+    }
+
+    private async getDevices() {
+        try {
+            const devices: MediaDeviceInfo[] = await navigator.mediaDevices.enumerateDevices();
+            devices.forEach((device) => {
+                if (device.kind === "videoinput" && this.cameras.length < 2) this.cameras.push(device);
+            });
+        } catch(e) {
+            //
         }
     }
 
@@ -173,7 +188,10 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         const { isVideo } = this.state;
         const isCaller = !!parseInt(match.params.isCaller);
         this.constraint = {
-            video: isVideo,
+            video: {
+                deviceId: this.cameraId,
+                width: {exact: 1280}, height: {exact: 720}
+            },
             audio: true,
         };
         const media = await navigator.mediaDevices.getUserMedia(this.constraint).catch((e) => console.log(e));
@@ -254,6 +272,35 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         // this.peer.removeVideo();
     }
 
+    private async handleSwitchCamera() {
+        this.cutVideoStream();
+        if (this.cameras.length >= 2) {
+            this.cutVideoStream();
+            if (!this.cameraId) {
+                this.cameraId = this.cameras[1].deviceId;
+            } else {
+                if (this.cameraId === this.cameras[0].deviceId) {
+                    this.cameraId = this.cameras[1].deviceId;
+                } else {
+                    this.cameraId = this.cameras[0].deviceId;
+                }
+            }
+
+            const constraint = {
+                video: {
+                    deviceId: this.cameraId,
+                    width: {exact: 1280}, height: {exact: 720}
+                },
+                audio: false,
+            }
+            this.localStream = await navigator.mediaDevices.getUserMedia(constraint);
+            this.localVideoStream = this.localStream;
+            this.smallVideo.srcObject = this.localStream;
+            const track = this.localStream.getVideoTracks()[0];
+            this.peer.replaceVideo(track);
+        }
+    }
+
     private handleSwitchVoice() {
         const { currentFriend, currentUser } = this.props;
         this.cutVideoStream();
@@ -309,7 +356,7 @@ class VideoCall extends React.Component<IProps, IVideoState> {
 
         if (isConnect && isVideo) {
             videoOperator.splice(0, 0, <SvgIcon onClick={this.handleSwitchVoice} className="video-call-opera-btn" type="switchVoice" color="#fff"/>);
-            videoOperator.push(<SvgIcon className="video-call-opera-btn" type="switchCamera" color="#fff"/>);
+            videoOperator.push(<SvgIcon onClick={this.handleSwitchCamera} className="video-call-opera-btn" type="switchCamera" color="#fff"/>);
         }
 
 

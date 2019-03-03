@@ -63,12 +63,11 @@ class Peer {
 
        this.peer.addEventListener("connectionstatechange", (e: any) => {
            // invorked by createOffer 
-           console.log("connectionstatechange", e);
+        //    console.log("connectionstatechange", e);
        });
 
        this.peer.addEventListener("negotiationneeded", (e: any) => {
-           // invorked by createOffer and create answer
-           console.log("negotiationneeded", e);
+        //    console.log("negotiationneeded");
        });
 
        this.peer.addEventListener("track", this.handleAddTrack);
@@ -76,19 +75,19 @@ class Peer {
        this.peer.addEventListener("iceconnectionstatechange", this.handleConnectStateChange);
 
        this.peer.addEventListener("icegatheringstatechange", (e: any) => {
-           console.log("icegatheringstatechange", e);
+        //    console.log("icegatheringstatechange", e);
        });
 
        this.peer.addEventListener("signalingstatechange", (e: any) => {
            // invork after create offer a
-           console.log("signalingstatechange", e);
+        //    console.log("signalingstatechange", e);
        });
 
        this.peer.addEventListener("connectionstatechange", this.handleConnectStateChange);
 
 
        this.peer.addEventListener("statsended", (e: any) => {
-           console.log("statsended", e);
+        //    console.log("statsended", e);
        });
 
        this.peer.addEventListener("datachannel", this.handleDataChannel);
@@ -104,7 +103,6 @@ class Peer {
    }
 
    private handleAddTrack(e: RTCTrackEvent) {
-       console.log("track");
        if (this.listener) {
             const arr = this.listener.get("addtrack");
             if (arr) {
@@ -120,18 +118,16 @@ class Peer {
    }
 
    private handleConnectStateChange(e: any) {
-       console.log('connection', e);
+       console.log('peer connection', e);
        const state = this.peer.iceConnectionState || this.peer.connectionState;
        let listeners: CallBack[] | undefined;
        if (state === "connected" || state === "completed") {
             if (!this.isConnected) {
-                console.log("Peer connected");
                 this.isConnected = true;
                 listeners = this.listener.get("connect");
             }
        } else {
             if (this.isConnected) {
-                console.log("Peer disconnected");
                 this.isConnected = false;
                 listeners = this.listener.get("disconnect");
             }
@@ -142,7 +138,6 @@ class Peer {
    }
 
    private handleIcecandidate(e: RTCPeerConnectionIceEvent) {
-        console.log("create icecandidate", e);
         const candidate = e.candidate;
         if (candidate) {
             const data: RTCIceCandidateInit = {
@@ -160,7 +155,6 @@ class Peer {
    } 
 
    private handleAddStream(e: MediaStreamEvent) {
-        console.log("add candaidate", e);
         if (this.connectListener) {
             this.connectListener.forEach((callback: ConnectCallBack) => {
                 callback(e);
@@ -188,10 +182,8 @@ class Peer {
    }
 
    public async createConnection(type: CallType) {
-       console.log("start to create offer");
        const offer: RTCSessionDescriptionInit | void = await this.peer.createOffer().catch(e => console.error(e));
        if (offer) {
-           console.log("offer created");
            this.peer.setLocalDescription(offer);
            const signalMsg: ISignalMsg = {
                data: offer,
@@ -199,12 +191,9 @@ class Peer {
                from: this.fromWho,
                type,
            }
-
-        //    this.socket.subscribeSignal(this.handleCallSignalMsg);
            this.socket.subscribeSignal("answer", this.receiveSession);
            this.socket.subscribeSignal("candidate", this.handleCandidateMsg);
            this.socket.sendSignalMsg(signalMsg);
-           console.log("send offer");
            return true;
        }
 
@@ -212,7 +201,6 @@ class Peer {
    }
 
    public async receiveCall() {
-       console.log("start to pick up phone");
        const videoOffer = SocketConnection.videoOffer;
        const candidates = SocketConnection.receiveCandidate;
        if (videoOffer) {
@@ -234,7 +222,6 @@ class Peer {
                this.socket.subscribeSignal("offer", this.receiveSession);
                this.socket.subscribeSignal("candidate", this.handleCandidateMsg);
                this.socket.sendSignalMsg(msg);
-               console.log("send anwser");
            }
        }
    }
@@ -243,30 +230,12 @@ class Peer {
        const videoTrack = stream.getVideoTracks()[0];
        const audioTrack = stream.getAudioTracks()[0];
 
-       /*
-       videoTrack.forEach((track) => {
-           this.peer.addTrack(track);
-       });
-
-       audioTrack.forEach((track) => {
-           this.peer.addTrack(track);
-       });
-       */
 
 
        audioTrack && this.peer.addTrack(audioTrack, stream);
-       videoTrack && this.peer.addTrack(videoTrack, stream);
-    //    this.videoSetId = this.peer.addTrack(videoTrack, stream);
-
-    //    this.videoTrack = videoTrack;
-    //    this.videoTrack.onended = function(e: any) {
-    //         console.log("track ended", e);
-    //    }
-       /*
-       this.videoTrack.addEventListener("ended", (e: any) => {
-           console.log("track ended", e);
-       });
-       */
+       if (videoTrack) {
+           this.videoSetId = this.peer.addTrack(videoTrack, stream);
+       }
    }
 
    public sendCloseMsg() {
@@ -313,13 +282,11 @@ class Peer {
    }
 
    public sendData(data: ArrayBuffer) {
-       /*
-       if (!this.channel) {
-           this.channel = this.peer.createDataChannel(this.channelId, {ordered: true});
-       }
-       */
-
        this.channel.send(data);
+   }
+
+   public replaceVideo(track: MediaStreamTrack) {
+       this.videoSetId.replaceTrack(track);
    }
 }
 
