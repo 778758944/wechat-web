@@ -43,7 +43,6 @@ class FriendList extends React.Component<IProps, {num: number}>
     }
 
     componentDidMount() {
-        console.log('context', this.context);
         const title: HTMLElement | null = document.querySelector(".nav-title");
         if (title) {
             title.innerText = "Chat";

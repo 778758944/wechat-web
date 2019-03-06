@@ -197,7 +197,6 @@ class VideoCall extends React.Component<IProps, IVideoState> {
         const media = await navigator.mediaDevices.getUserMedia(this.constraint).catch((e) => console.log(e));
 
         if (media) {
-            console.log("localMedia", media);
             this.localStream = media;
             if (isVideo) {
                 const videoTrack: MediaStreamTrack[] = media.getVideoTracks();

@@ -10,7 +10,6 @@ let swRegisterCallBack: CallBack[];
 function registerSw() {
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("./sw.js").then((registation: ServiceWorkerRegistration) => {
-            console.log("serviceworker register success");
             swRegistation = registation;
             swRegisterCallBack && swRegisterCallBack.forEach((callback) => {
                 callback();
@@ -26,14 +25,14 @@ function getSubscribState() {
         swRegistation.pushManager.getSubscription().then((subscription) => {
             // CHECKED WHETHER USER IS SUBSCRIBED
             if (subscription) {
-                console.log("subscribed", subscription);
+                // console.log("subscribed", subscription);
                 const sub_json = subscription.toJSON();
                 net_setPushKey({
                     key: JSON.stringify(sub_json)
                 });
             } else {
                 swRegistation.pushManager.subscribe({userVisibleOnly: true}).then((subscription: PushSubscription) => {
-                  console.log("subscribe success: ", subscription);
+                //   console.log("subscribe success: ", subscription);
                   const sub_json = subscription.toJSON();
                   net_setPushKey({
                     key: JSON.stringify(sub_json)

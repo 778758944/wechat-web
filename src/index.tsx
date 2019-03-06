@@ -17,17 +17,21 @@ const reqSvgs = require.context("./source", false, /\.svg$/);
 const allSvgs = reqSvgs.keys();
 allSvgs.forEach((path: string) => {
     reqSvgs(path);
-})
+});
+
+let middleware: any = [ReduxThunk];
+
+if (process.env.NODE_ENV === "development") {
+    middleware.push(logger);
+}
 
 
 
 
-let store = createStore(rootReducer, applyMiddleware(ReduxThunk, logger));
+let store = createStore(rootReducer, applyMiddleware(...middleware));
 
 // register serviceworker;
 registerSw();
-
-// alert("heihei");
 
 
 

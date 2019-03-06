@@ -68,12 +68,8 @@ class Home extends React.Component<IProps, {}> {
         const { from } = msg;
         const { history, location } = this.props;
         const path = `/video/${from}/0`;
-        if (path === location.pathname) return;
-        if (location.pathname.indexOf("video")) {
-            toast.fail("Sorry, the opponent is in another video call now");
-        } else {
-            history.push(path);
-        }
+        // if (path === location.pathname) return;
+        history.push(path);
     }
 
     private handleFileSend(msg: ISignalMsg) {

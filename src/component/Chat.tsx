@@ -98,7 +98,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
         }
 
         if (messages.length !== prevMsgs.length) {
-            console.log("is not equal");
             this.handleMsgAreaHeight();
         }
     }
@@ -241,7 +240,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
     }
 
     handleMoreClick(key: string) {
-        console.log(key);
         switch(key) {
             case "Video":
                 this.handleVideoCall(1);

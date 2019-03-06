@@ -64,7 +64,6 @@ export class FileSender  {
             });
 
             fileReader.addEventListener("error", (e) => {
-                debugger;
                 console.log("file reader error");
                 reject(e);
             });
