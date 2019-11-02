@@ -22,7 +22,6 @@ export default class SocketConnection {
     private signalListener: Map<ISignalEventType, ISignalCallback[]>;
 
     private constructor(url: string) {
-        console.log("create new socket");
         this.socket = io(url);
         this.initAfter();
         
@@ -55,7 +54,6 @@ export default class SocketConnection {
         });
 
         this.socket.on(SignalType, (signalMsg: ISignalMsg) => {
-            console.log('singalMsg', signalMsg);
             const data = signalMsg.data;
             if (isRTCIceCandidate(data)) {
                 SocketConnection.receiveCandidate = SocketConnection.receiveCandidate || [];

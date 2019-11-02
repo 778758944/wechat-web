@@ -18,7 +18,6 @@ export default class JpegEncode {
             const init = await import("../../wasm/jpeg_encode");
             if (typeof init === "function") {
                 const t = await initWasm("jpeg_encode", init, this.setWasmObject);
-                console.log(this.wasmObject);
                 if (!t) return false;
                 return true;
             }

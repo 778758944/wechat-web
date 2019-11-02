@@ -14,7 +14,6 @@ import { getUTCTimeStamp, disableOverBounce } from "../util"
 import * as PropTypes from "prop-types"
 import WeChatNotify from "../notification"
 import ImageSender from "../ImageSender"
-import Peer from "../network/Peer"
 import FileManager from "../network/FileManager"
 
 interface IParam {
@@ -32,6 +31,7 @@ interface IChatProps extends RouteComponentProps<IParam> {
 
 interface IChatState {
     inputMsg: string;
+    isVoiceMode: boolean;
 }
 
 class Chat extends React.Component<IChatProps, IChatState> {
@@ -48,7 +48,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
     private fileInput: HTMLInputElement;
     private imageSender: ImageSender;
     private sendFileInput: HTMLInputElement;
-    private peer: Peer;
 
     static contextTypes = {
         title: PropTypes.object
@@ -57,7 +56,8 @@ class Chat extends React.Component<IChatProps, IChatState> {
     constructor(props: IChatProps) {
         super(props);
         this.state = {
-            inputMsg: ""
+            inputMsg: "",
+            isVoiceMode: false
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.sendMsg = this.sendMsg.bind(this);
@@ -76,6 +76,11 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
         // initial image_sender
         this.imageSender = ImageSender.getInstance();
+        this.toggleInputMode = this.toggleInputMode.bind(this);
+
+        this.startRecord = this.startRecord.bind(this);
+        this.endRecord = this.endRecord.bind(this);
+        this.cancelRecord = this.cancelRecord.bind(this);
 
         // initial jpeg_encode
         /*
@@ -98,7 +103,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
         }
 
         if (messages.length !== prevMsgs.length) {
-            console.log("is not equal");
             this.handleMsgAreaHeight();
         }
     }
@@ -228,6 +232,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
 
     handleInputFocus() {
         this.handleMsgAreaHeight();
+        this.isShowMore && this.handleMore();
         // this.msgArea.style.height = "0";
     }
 
@@ -241,7 +246,6 @@ class Chat extends React.Component<IChatProps, IChatState> {
     }
 
     handleMoreClick(key: string) {
-        console.log(key);
         switch(key) {
             case "Video":
                 this.handleVideoCall(1);
@@ -298,8 +302,36 @@ class Chat extends React.Component<IChatProps, IChatState> {
         if (e) this.sendFileInput = e;
     }
 
+    private toggleInputMode() {
+        const { isVoiceMode } = this.state;
+        !isVoiceMode && this.isShowMore && this.handleMore();
+
+        this.setState({
+            isVoiceMode: !this.state.isVoiceMode
+        })
+    }
+
+    // record voice
+    private startRecord() {
+        console.log("start");
+    }
+
+    private endRecord() {
+        console.log("end");
+    }
+
+    private cancelRecord() {
+        console.log("cancel");
+    }
+
+    private handleContext(e: any) {
+        e.preventDefault();
+        return false;
+    }
+
     render() {
         let { messages, currentFriend } = this.props;
+        const { isVoiceMode } = this.state;
         // messages = messages.concat([mockMineMsg, mockOtherMsg]);
         // let messages = msgArr;
         const msgs = messages.map((msg: IMessage, index: number) => {
@@ -319,8 +351,8 @@ class Chat extends React.Component<IChatProps, IChatState> {
                 </div>
                 <div>
                     <div className="chat-input-area">
-                        <SvgIcon type="myvoice" onClick={() => console.log("record")} color="#7f8389"/>
-                        <div className="chat-input-wrap">
+                        <SvgIcon onClick={this.toggleInputMode} type={isVoiceMode ? "mykeyboard" : "myvoice"} color="#7f8389"/>
+                        {isVoiceMode ? <a className="chat-voice-input" onTouchStart={this.startRecord} onTouchEnd={this.endRecord} onTouchCancel={this.cancelRecord} onContextMenu={this.handleContext}>Hold to Talk</a> : <div className="chat-input-wrap">
                             <textarea
                                 className="chat-input"
                                 rows={1}
@@ -330,7 +362,7 @@ class Chat extends React.Component<IChatProps, IChatState> {
                                 onKeyDown={this.handleKeyDown}
                                 onFocus={this.handleInputFocus}
                             ></textarea>
-                        </div>
+                        </div>}
                         <SvgIcon type="myemoji" color="#7f8389"/>
                         <SvgIcon onClick={this.handleMore} type="myadd" color="#7f8389"/>
                     </div>
