@@ -21,7 +21,7 @@ class Peer {
        iceServers:[
            {urls: "stun:stun2.l.google.com:19302"},
            {
-            'urls': 'turn:35.200.6.233:3478',
+            'urls': 'turn:45.32.50.133:3478',
             'credential': '123321qq',
             'username': 'tomxing'
            }
