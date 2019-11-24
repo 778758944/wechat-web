@@ -11,7 +11,7 @@ const  Record: IRecord = {
     async start() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-            const mediaRecord = new MediaRecorder(stream);
+            // const mediaRecord = new MediaRecorder(stream);
         } catch (e) {
             console.error(e);
         }
