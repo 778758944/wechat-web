@@ -1,5 +1,6 @@
 import SocketConnection from "./SocketConnection"
 import { ISignalMsg, SignalType, isRTCIceCandidate, isDataString, CallType } from "./Signal"
+import { turnUrl } from "./index"
 
 interface ConnectCallBack {
     (e: MediaStreamEvent): void;
@@ -21,7 +22,7 @@ class Peer {
        iceServers:[
            {urls: "stun:stun2.l.google.com:19302"},
            {
-            'urls': 'turn:45.32.50.133:3478',
+            'urls': `turn:${turnUrl}:10028`,
             'credential': '123321qq',
             'username': 'tomxing'
            }

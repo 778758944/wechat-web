@@ -7,7 +7,9 @@ const loginUrl = "/api/yonghus/login";
 const setPointUrl = "/api/setPoint";
 const clearUnreadMsgUrl = "/api/unreads/getUnreadMsg";
 const setPushKey = "/api/pushkeys/addkey";
-export const socketUrl = "https://chat.xingwentao.xyz";
+
+export const socketUrl = process.env.NODE_ENV === "development" ? "https://chat.xingwentao.xyz:10027" : location.origin;
+export const turnUrl = process.env.NODE_ENV === "development" ? "chat.xingwentao.xyz" : location.hostname;
 
 const DOMAIN = "http://wechat.xingwentao.xyz";
 

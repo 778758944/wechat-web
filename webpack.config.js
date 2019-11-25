@@ -115,5 +115,14 @@ module.exports = {
     },
     node: {
         fs: 'empty',
+    },
+    devServer: {
+        proxy: {
+            "/api": {
+                target: "https://chat.xingwentao.xyz:10027",
+                secure: false,
+                changeOrigin: true
+            }
+        }
     }
 }

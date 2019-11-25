@@ -22,6 +22,7 @@ function registerSw() {
 
 function getSubscribState() {
     if (swRegistation && "PushManager" in window) {
+        debugger;
         swRegistation.pushManager.getSubscription().then((subscription) => {
             // CHECKED WHETHER USER IS SUBSCRIBED
             if (subscription) {
@@ -31,7 +32,10 @@ function getSubscribState() {
                     key: JSON.stringify(sub_json)
                 });
             } else {
-                swRegistation.pushManager.subscribe({userVisibleOnly: true}).then((subscription: PushSubscription) => {
+                swRegistation.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: "BLL17tcFFuhf_OLC10jsyw8ad3ilmq1XYSVPvwPnrJKoxNBIOxTro8jjJAEnDyFFzFjL_PxvM851DZWnmIW4xHU"
+                }).then((subscription: PushSubscription) => {
                 //   console.log("subscribe success: ", subscription);
                   const sub_json = subscription.toJSON();
                   net_setPushKey({
