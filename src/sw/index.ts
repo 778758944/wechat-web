@@ -1,4 +1,4 @@
-import { net_setPushKey, Response } from "../network"
+import { net_setPushKey } from "../network"
 
 interface CallBack {
     (): void;
@@ -9,7 +9,7 @@ let swRegisterCallBack: CallBack[];
 
 function registerSw() {
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js").then((registation: ServiceWorkerRegistration) => {
+        navigator.serviceWorker.register("/sw.js").then((registation: ServiceWorkerRegistration) => {
             swRegistation = registation;
             swRegisterCallBack && swRegisterCallBack.forEach((callback) => {
                 callback();

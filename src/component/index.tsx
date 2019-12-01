@@ -114,11 +114,13 @@ class Home extends React.Component<IProps, {}> {
             let path;
             if ((path = data.path)) {
                 const { location } = history;
-                if (location.pathname === "friend") {
+                if (location.pathname === "/friend") {
                     history.push(path);
                 } else {
+                    if (location.pathname.indexOf("/chat/") !== -1) {
+                        history.goBack();
+                    }
                     // todo
-                    // history.replace(path);
                 }
             }
         }
@@ -126,16 +128,18 @@ class Home extends React.Component<IProps, {}> {
 
     private handleVisibilityChange() {
         const { location } = this.props;
-        let point;
-        if (document.hidden) {
-            point = `${location.pathname}/hidden`
-        } else {
-            point = location.pathname
-        }
+        if (location.pathname.indexOf("/chat/") != -1) {
+            let point;
+            if (document.hidden) {
+                point = `${location.pathname}/hidden`
+            } else {
+                point = location.pathname
+            }
 
-        net_setPoint({ point }).catch(() => {
-            //
-        });
+            net_setPoint({ point }).catch(() => {
+                //
+            });
+        }
     }
 
     public render() {

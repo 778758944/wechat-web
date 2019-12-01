@@ -7,6 +7,7 @@ const theme = require("./package.json").theme;
 module.exports = {
     entry: "./src/index.tsx",
     output: {
+        publicPath: "/",
         filename: "./app.js"
     },
     devServer: {
@@ -84,9 +85,9 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             title: "Chat",
-            filename: "./index.html",
+            filename: "index.html",
             template: "./template/index-temp.html",
-            base: "/",
+            favicon: "./static/app_icon.jpg",
             hash: true,
         }),
 
