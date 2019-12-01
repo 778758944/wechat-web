@@ -22,7 +22,6 @@ function registerSw() {
 
 function getSubscribState() {
     if (swRegistation && "PushManager" in window) {
-        debugger;
         swRegistation.pushManager.getSubscription().then((subscription) => {
             // CHECKED WHETHER USER IS SUBSCRIBED
             if (subscription) {

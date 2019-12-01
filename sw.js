@@ -1,4 +1,4 @@
-const cacheName = "CHAT-CACHE-V30";
+const cacheName = "CHAT-CACHE-V41";
 
 const urlsToCache = [
    "./"
@@ -14,7 +14,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
     // console.log("fetch event:", event);
 
-    if (event.request.method === 'HEAD') {
+    if (event.request.method === 'GET') {
         event.respondWith(
             caches.match(event.request).then((response) => {
                 if (response) {
@@ -51,23 +51,80 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("push", (event) => {
     console.log("push event", event);
-    console.log(event.data.text());
-    var data=JSON.parse(event.data.text());
+    console.log(event.data.json());
+    var data = event.data.json();
+    // keep running until the promise pass to waitUntil has settled
 	event.waitUntil(
-		self.registration.showNotification(data.title,{
-			body:data.body,
-			icon:data.icon,
-			tag:data.title,
-			data:data.data
-		})
+        self.registration.getNotifications().then((notifications) => {
+            console.log("notification", notifications);
+            let existNotify = null;
+            for (let i = 0, len = notifications.length; i < len; i++) {
+                const notify = notifications[i];
+                if (notify.tag === data.tag) {
+                    existNotify = notify;
+                    break;
+                }
+            }
+
+            const option = {
+                icon:data.icon,
+                tag:data.tag,
+                data:data.data,
+                badge: '/static/app_icon.jpg',
+                renotify: true,
+            }
+
+            if (existNotify) {
+                let count = existNotify.data.count + 1;
+                option.body = `Send you ${count} messages`;
+                option.data.count = count;
+                existNotify.close();
+            } else {
+                option.body = data.body;
+                option.data.count = 1;
+            }
+
+            return self.registration.showNotification(data.title, option);
+        })
 	);
 });
 
 
 self.addEventListener('notificationclick', function(event) {
     console.log('[Service Worker] Notification click Received.');
+    const path = event.notification.data.url;
+    const url = new URL(path, self.location.origin);
     event.notification.close();
+
+    // keep service work alive
     event.waitUntil(
-      clients.openWindow(event.notification.data.url)
+    //   clients.openWindow(event.notification.data.url)
+        clients.matchAll({
+            type: "window",
+            includeUncontrolled: true,
+        }).then((windowClients) => {
+            const isTotMatch = false;
+            let matchClient = (windowClients && windowClients[0]) || null;
+            for (let i = 1, len = windowClients.length; i < len; i++) {
+                const wc = windowClients[i];
+                if (wc.url === url) {
+                    mactchClient = wc;
+                    isTotMatch = true;
+                    break;
+                }
+            }
+
+            if (!matchClient) {
+                return clients.openWindow(event.notification.data.url);
+            } else {
+                if (!isTotMatch) {
+                    matchClient.postMessage({
+                        type: "NOTIFY_ROUTE",
+                        path
+                    });
+                }
+                return matchClient.focus();
+            }
+        })
     );
 });

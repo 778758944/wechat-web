@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom"
-import { HashRouter, Route, Switch} from "react-router-dom"
+import { BrowserRouter, Route, Switch} from "react-router-dom"
 import Login from "./component/Login"
 import Home from "./component/index"
 import { createStore, applyMiddleware, Action, Dispatch } from "redux"
@@ -40,12 +40,12 @@ class App extends React.Component
 {
     public render() {
         return (
-            <HashRouter>
+            <BrowserRouter>
                 <Switch>
                     <Route path="/login" exact component={Login}/>
                     <Route path="/" component={Home}/>
                 </Switch>
-            </HashRouter>
+            </BrowserRouter>
         )
     }
 }

@@ -86,6 +86,7 @@ module.exports = {
             title: "Chat",
             filename: "./index.html",
             template: "./template/index-temp.html",
+            base: "/",
             hash: true,
         }),
 
@@ -123,6 +124,7 @@ module.exports = {
                 secure: false,
                 changeOrigin: true
             }
-        }
+        },
+        historyApiFallback: true
     }
 }

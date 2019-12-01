@@ -11,12 +11,11 @@ import { createInitFriendList } from "../action/FriendListAction"
 import { Response, net_getFriendList, IGetFriendList } from "../network"
 import Nav from "./Navigator"
 import SocketConnection from "../network/SocketConnection"
-import { socketUrl } from "../network"
+import { socketUrl, net_setPoint } from "../network"
 import { ISignalMsg } from "../network/Signal"
-import Peer from "../network/Peer"
 import FileManager from "../network/FileManager"
-import toast from "antd-mobile/es/toast"
-import "antd-mobile/es/toast/style/index.css"
+import { subscribeNotify } from "../sw"
+
 
 
 interface IProps extends RouteComponentProps {
@@ -33,15 +32,27 @@ interface IHomeState {
 
 class Home extends React.Component<IProps, {}> {
     private socket: SocketConnection;
-    private peer: Peer;
+
+    public constructor(props: IProps) {
+        super(props);
+        this.handleOfferMsg = this.handleOfferMsg.bind(this);
+        this.handleFileDeny = this.handleFileDeny.bind(this);
+        this.handleNotify = this.handleNotify.bind(this);
+        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
+    }
 
     public componentDidMount() {
-        // console.log(this.props);
-        const { history, dispatch, location } = this.props;
+        const { history, dispatch } = this.props;
         net_getFriendList().then((res: Response<IGetFriendList>) => {
             if (res && res.data) {
+                subscribeNotify();
                 dispatch(createInitFriendList(res.data.friends));
                 dispatch(initCurrentUserActionCreate(res.data.myself));
+                this.socket = SocketConnection.getInstance(socketUrl);
+                this.socket.subscribeSignal("offer", this.handleOfferMsg);
+                this.socket.subscribeSignal("denyFile", this.handleFileDeny);
+                navigator.serviceWorker.addEventListener("message", this.handleNotify, false);
+                document.addEventListener("visibilitychange", this.handleVisibilityChange, false);
             } else {
                 history.replace("/login");
             }
@@ -49,13 +60,18 @@ class Home extends React.Component<IProps, {}> {
             history.replace("/login");
         });
 
-        this.socket = SocketConnection.getInstance(socketUrl);
-        this.handleOfferMsg = this.handleOfferMsg.bind(this);
-        this.socket.subscribeSignal("offer", this.handleOfferMsg);
-        this.socket.subscribeSignal("denyFile", this.handleFileDeny);
-        window.addEventListener("beforeunload", (e: any) => {
-            // e.returnValue = "File is transiting, Are you sure you want to quit";
-        });
+        // this.socket = SocketConnection.getInstance(socketUrl);
+        // this.socket.subscribeSignal("offer", this.handleOfferMsg);
+        // this.socket.subscribeSignal("denyFile", this.handleFileDeny);
+    }
+
+    public componentWillUnmount() {
+        if (this.socket) {
+            this.socket.unSubscribeSignal("offer", this.handleOfferMsg);
+            this.socket.unSubscribeSignal("denyFile", this.handleFileSend);
+            navigator.serviceWorker.removeEventListener("message", this.handleNotify);
+            document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+        }
     }
 
     private handleFileDeny(msg: ISignalMsg) {
@@ -90,6 +106,38 @@ class Home extends React.Component<IProps, {}> {
             break;
         }
     }
+
+    private handleNotify(e: MessageEvent) {
+        const { data } = e;
+        const { history } = this.props;
+        if (data && data.type === "NOTIFY_ROUTE") {
+            let path;
+            if ((path = data.path)) {
+                const { location } = history;
+                if (location.pathname === "friend") {
+                    history.push(path);
+                } else {
+                    // todo
+                    // history.replace(path);
+                }
+            }
+        }
+    }
+
+    private handleVisibilityChange() {
+        const { location } = this.props;
+        let point;
+        if (document.hidden) {
+            point = `${location.pathname}/hidden`
+        } else {
+            point = location.pathname
+        }
+
+        net_setPoint({ point }).catch(() => {
+            //
+        });
+    }
+
     public render() {
         return (
             <Nav>
