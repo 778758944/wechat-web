@@ -77,18 +77,24 @@ export default class WeChatNotify {
             this.audioEle.loop = false;
         }
 
-        this.audioEle.play();
+        this.audioEle.play().catch(() => {
+            //
+        });
     }
 
     public playMsgVibrate(pattern: number | number[], timeout: number = 0) {
-        if (this.isVibrateSupport) {
-            navigator.vibrate(pattern);
-            if (timeout) {
-                this.timer = setInterval(() => {
-                    navigator.vibrate(pattern);
-                }, timeout);
+        try {
+            if (this.isVibrateSupport) {
+                navigator.vibrate(pattern);
+                if (timeout) {
+                    this.timer = setInterval(() => {
+                        navigator.vibrate(pattern);
+                    }, timeout);
+                }
             }
-        }
+        } catch(e) {
+            //
+        };
     }
 
     public playVideoNotice() {

@@ -11,7 +11,7 @@ import { createInitFriendList } from "../action/FriendListAction"
 import { Response, net_getFriendList, IGetFriendList } from "../network"
 import Nav from "./Navigator"
 import SocketConnection from "../network/SocketConnection"
-import { socketUrl, net_setPoint } from "../network"
+import { socketUrl } from "../network"
 import { ISignalMsg } from "../network/Signal"
 import FileManager from "../network/FileManager"
 import { subscribeNotify } from "../sw"
@@ -127,17 +127,10 @@ class Home extends React.Component<IProps, {}> {
     }
 
     private handleVisibilityChange() {
-        const { location } = this.props;
-        if (location.pathname.indexOf("/chat/") != -1) {
-            let point;
-            if (document.hidden) {
-                point = `${location.pathname}/hidden`
-            } else {
-                point = location.pathname
-            }
-
-            net_setPoint({ point }).catch(() => {
-                //
+        if (this.socket) {
+            const { socket } = this.socket;
+            socket.emit("stateChange", {
+                hidden: document.hidden
             });
         }
     }
